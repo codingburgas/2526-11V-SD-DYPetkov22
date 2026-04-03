@@ -20,6 +20,12 @@
         <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
+    <div class="mb-3">
+        <label asp-for="Instructions" class="form-label">Cooking Instructions</label>
+        <textarea asp-for="Instructions" class="form-control" rows="6" placeholder="Describe the cooking steps"></textarea>
+        <span asp-validation-for="Instructions" class="text-danger"></span>
+    </div>
+
     <div class="row g-3">
         <div class="col-md-6">
             <label asp-for="CookingTime" class="form-label"></label>

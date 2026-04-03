@@ -8,6 +8,8 @@ public class WeeklyMealPlannerDto
     public int WeeklyTotalCalories { get; set; }
     public IReadOnlyCollection<WeeklyDayDto> Days { get; set; } = Array.Empty<WeeklyDayDto>();
     public IReadOnlyCollection<MostUsedIngredientDto> MostUsedIngredients { get; set; } = Array.Empty<MostUsedIngredientDto>();
+    public IReadOnlyCollection<PresetMealPlanOptionDto> PresetPlans { get; set; } = Array.Empty<PresetMealPlanOptionDto>();
+    public StartPresetMealPlanDto StartPresetPlan { get; set; } = new();
 }
 
 public class WeeklyDayDto
@@ -22,6 +24,7 @@ public class WeeklyMealItemDto
     public string MealType { get; set; } = string.Empty;
     public string RecipeName { get; set; } = string.Empty;
     public int Calories { get; set; }
+    public double PortionMultiplier { get; set; }
 }
 
 public class MostUsedIngredientDto

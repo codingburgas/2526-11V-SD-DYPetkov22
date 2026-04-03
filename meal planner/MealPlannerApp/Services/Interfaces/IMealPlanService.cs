@@ -12,4 +12,6 @@ public interface IMealPlanService
     Task<bool> DeleteMealPlan(int id);
     Task<Meal> AddMealToPlan(int mealPlanId, Meal meal);
     Task<WeeklyMealPlanResult> GetWeeklyPlan(int userId, DateTime? weekStart = null);
+    Task<IReadOnlyCollection<PresetMealPlanOptionResult>> GetPresetMealPlans();
+    Task StartPresetMealPlan(StartPresetMealPlanRequest request);
 }

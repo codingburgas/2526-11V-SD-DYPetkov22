@@ -19,4 +19,8 @@ public class AddMealDto
 
     [DataType(DataType.Date)]
     public DateTime WeekStart { get; set; }
+
+    [Display(Name = "Portion Size")]
+    [Range(0.5, 3.0)]
+    public double PortionMultiplier { get; set; } = 1.0;
 }

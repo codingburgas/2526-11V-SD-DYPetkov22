@@ -8,6 +8,7 @@ public class Recipe : BaseEntity
     public string Name { get; set; } = string.Empty;
 
     public string? Description { get; set; }
+    public string? Instructions { get; set; }
 
     [Range(1, 300)]
     public int CookingTime { get; set; }

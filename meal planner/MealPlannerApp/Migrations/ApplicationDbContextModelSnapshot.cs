@@ -3,7 +3,6 @@ using System;
 using MealPlannerApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -16,29 +15,23 @@ namespace MealPlannerApp.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
-
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
             modelBuilder.Entity("MealPlannerApp.Models.Ingredient", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("CaloriesPer100g")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -65,6 +58,132 @@ namespace MealPlannerApp.Migrations
                             CaloriesPer100g = 35,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Name = "Broccoli"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CaloriesPer100g = 155,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Eggs"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CaloriesPer100g = 23,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Spinach"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CaloriesPer100g = 402,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Cheddar Cheese"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CaloriesPer100g = 389,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Rolled Oats"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CaloriesPer100g = 59,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Greek Yogurt"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CaloriesPer100g = 89,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Banana"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CaloriesPer100g = 208,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Salmon Fillet"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CaloriesPer100g = 86,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Sweet Potato"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CaloriesPer100g = 164,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Chickpeas"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CaloriesPer100g = 18,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Cherry Tomatoes"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CaloriesPer100g = 149,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Whole Wheat Pasta"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CaloriesPer100g = 431,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Parmesan"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CaloriesPer100g = 31,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Bell Pepper"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CaloriesPer100g = 40,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Onion"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CaloriesPer100g = 149,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Garlic"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CaloriesPer100g = 884,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Olive Oil"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CaloriesPer100g = 16,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Cucumber"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CaloriesPer100g = 160,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Avocado"
                         });
                 });
 
@@ -72,21 +191,24 @@ namespace MealPlannerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("MealPlanId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("MealType")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("PortionMultiplier")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("REAL")
+                        .HasDefaultValue(1.0);
 
                     b.Property<int>("RecipeId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -101,18 +223,16 @@ namespace MealPlannerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -125,28 +245,29 @@ namespace MealPlannerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Calories")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("CookingTime")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Instructions")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsVegetarian")
-                        .HasColumnType("bit");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -159,19 +280,87 @@ namespace MealPlannerApp.Migrations
                             Calories = 520,
                             CookingTime = 35,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Simple grilled chicken served with rice.",
+                            Description = "A classic high-protein plate with grilled chicken, rice, and broccoli.",
+                            Instructions = "1. Cook the rice until fluffy and set it aside.\n2. Heat a pan, add the chicken breast, and cook until golden on both sides and fully cooked through.\n3. Steam or saute the broccoli until just tender.\n4. Slice the chicken and plate it with the rice and broccoli.\n5. Serve everything warm.",
                             IsVegetarian = false,
                             Name = "Grilled Chicken and Rice"
                         },
                         new
                         {
                             Id = 2,
-                            Calories = 340,
+                            Calories = 390,
                             CookingTime = 20,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Steamed broccoli with rice.",
+                            Description = "A fast vegetarian bowl with rice, broccoli, and melted cheddar.",
+                            Instructions = "1. Cook the rice and keep it warm.\n2. Steam the broccoli until bright green and tender.\n3. Put the rice into a bowl and top it with the broccoli.\n4. Sprinkle cheddar cheese over the hot bowl so it softens slightly.\n5. Serve immediately.",
                             IsVegetarian = true,
                             Name = "Broccoli Rice Bowl"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Calories = 410,
+                            CookingTime = 15,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "A quick savory breakfast with eggs, spinach, cheese, and onion.",
+                            Instructions = "1. Heat olive oil in a non-stick pan and soften the onion for a few minutes.\n2. Add the spinach and cook until wilted.\n3. Beat the eggs, pour them into the pan, and let them begin to set.\n4. Sprinkle cheddar over the top and fold the omelette in half.\n5. Cook for another minute, then slide onto a plate and serve.",
+                            IsVegetarian = true,
+                            Name = "Spinach Omelette"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Calories = 360,
+                            CookingTime = 5,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "A no-cook breakfast bowl with oats, yogurt, and banana.",
+                            Instructions = "1. Spoon the Greek yogurt into a bowl.\n2. Stir in the rolled oats so they soften slightly.\n3. Slice the banana and place it on top.\n4. Let the bowl rest for a couple of minutes before serving.",
+                            IsVegetarian = true,
+                            Name = "Greek Yogurt Banana Oats"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Calories = 610,
+                            CookingTime = 40,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "An easy oven meal with salmon, sweet potato, broccoli, and garlic.",
+                            Instructions = "1. Cut the sweet potato into cubes and place it on a baking tray with olive oil and garlic.\n2. Roast the sweet potato until it starts to soften.\n3. Add the salmon and broccoli to the tray.\n4. Bake until the salmon flakes easily and the broccoli is tender.\n5. Serve straight from the tray while hot.",
+                            IsVegetarian = false,
+                            Name = "Salmon and Sweet Potato Tray Bake"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Calories = 560,
+                            CookingTime = 25,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "A hearty vegetarian pasta with chickpeas, tomatoes, spinach, and parmesan.",
+                            Instructions = "1. Cook the pasta until al dente and reserve a little cooking water.\n2. In a pan, warm olive oil and garlic, then add the cherry tomatoes.\n3. Stir in the chickpeas and cook until heated through.\n4. Add spinach and cook until wilted, then fold in the pasta.\n5. Finish with parmesan and a splash of pasta water if needed before serving.",
+                            IsVegetarian = true,
+                            Name = "Chickpea Tomato Pasta"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Calories = 545,
+                            CookingTime = 30,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "A one-pan chicken and rice meal with peppers, onion, and garlic.",
+                            Instructions = "1. Cook the rice first and set it aside.\n2. Saute onion, bell pepper, and garlic in olive oil until softened.\n3. Add the chicken pieces and cook until lightly browned and cooked through.\n4. Stir the rice into the pan and mix everything together until hot.\n5. Serve the skillet meal straight away.",
+                            IsVegetarian = false,
+                            Name = "Chicken Pepper Rice Skillet"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Calories = 430,
+                            CookingTime = 10,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "A fresh no-cook salad with chickpeas, cucumber, tomatoes, and avocado.",
+                            Instructions = "1. Drain the chickpeas and add them to a large bowl.\n2. Dice the cucumber, halve the cherry tomatoes, and cube the avocado.\n3. Add everything to the bowl with olive oil.\n4. Toss gently so the avocado stays mostly intact.\n5. Serve chilled or at room temperature.",
+                            IsVegetarian = true,
+                            Name = "Mediterranean Chickpea Salad"
                         });
                 });
 
@@ -179,21 +368,19 @@ namespace MealPlannerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("IngredientId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("QuantityInGrams")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("RecipeId")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -225,17 +412,281 @@ namespace MealPlannerApp.Migrations
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 3,
+                            QuantityInGrams = 120,
+                            RecipeId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IngredientId = 2,
                             QuantityInGrams = 150,
                             RecipeId = 2
                         },
                         new
                         {
-                            Id = 4,
+                            Id = 5,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IngredientId = 3,
                             QuantityInGrams = 180,
                             RecipeId = 2
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 6,
+                            QuantityInGrams = 30,
+                            RecipeId = 2
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 4,
+                            QuantityInGrams = 180,
+                            RecipeId = 3
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 5,
+                            QuantityInGrams = 60,
+                            RecipeId = 3
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 6,
+                            QuantityInGrams = 30,
+                            RecipeId = 3
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 17,
+                            QuantityInGrams = 30,
+                            RecipeId = 3
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 19,
+                            QuantityInGrams = 10,
+                            RecipeId = 3
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 8,
+                            QuantityInGrams = 200,
+                            RecipeId = 4
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 7,
+                            QuantityInGrams = 60,
+                            RecipeId = 4
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 9,
+                            QuantityInGrams = 120,
+                            RecipeId = 4
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 10,
+                            QuantityInGrams = 180,
+                            RecipeId = 5
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 11,
+                            QuantityInGrams = 250,
+                            RecipeId = 5
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 3,
+                            QuantityInGrams = 120,
+                            RecipeId = 5
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 18,
+                            QuantityInGrams = 10,
+                            RecipeId = 5
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 19,
+                            QuantityInGrams = 15,
+                            RecipeId = 5
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 14,
+                            QuantityInGrams = 180,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 12,
+                            QuantityInGrams = 160,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 13,
+                            QuantityInGrams = 180,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 5,
+                            QuantityInGrams = 60,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 15,
+                            QuantityInGrams = 25,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 18,
+                            QuantityInGrams = 10,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 19,
+                            QuantityInGrams = 10,
+                            RecipeId = 6
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 1,
+                            QuantityInGrams = 180,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 2,
+                            QuantityInGrams = 160,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 29,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 16,
+                            QuantityInGrams = 120,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 30,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 17,
+                            QuantityInGrams = 60,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 31,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 18,
+                            QuantityInGrams = 10,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 19,
+                            QuantityInGrams = 10,
+                            RecipeId = 7
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 12,
+                            QuantityInGrams = 180,
+                            RecipeId = 8
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 20,
+                            QuantityInGrams = 120,
+                            RecipeId = 8
+                        },
+                        new
+                        {
+                            Id = 35,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 13,
+                            QuantityInGrams = 120,
+                            RecipeId = 8
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 21,
+                            QuantityInGrams = 80,
+                            RecipeId = 8
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IngredientId = 19,
+                            QuantityInGrams = 10,
+                            RecipeId = 8
                         });
                 });
 
@@ -243,23 +694,21 @@ namespace MealPlannerApp.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Role")
-                        .HasColumnType("int");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

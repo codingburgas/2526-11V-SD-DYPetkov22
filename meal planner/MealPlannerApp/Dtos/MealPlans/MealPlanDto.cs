@@ -24,10 +24,12 @@ public class MealPlanMealDto
     public string MealType { get; set; } = string.Empty;
     public string RecipeName { get; set; } = string.Empty;
     public int Calories { get; set; }
+    public double PortionMultiplier { get; set; }
 }
 
 public class MostUsedIngredientSummaryDto
 {
     public string Name { get; set; } = string.Empty;
     public int UsageCount { get; set; }
+    public int TotalQuantityInGrams { get; set; }
 }

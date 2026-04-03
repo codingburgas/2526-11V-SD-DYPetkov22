@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dean\\project\\project-DYPetkov22\\meat planner\\MealPlannerApp\\MealPlannerApp.csproj": {}
+    "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dean\\project\\project-DYPetkov22\\meat planner\\MealPlannerApp\\MealPlannerApp.csproj": {
+    "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dean\\project\\project-DYPetkov22\\meat planner\\MealPlannerApp\\MealPlannerApp.csproj",
+        "projectUniqueName": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
         "projectName": "MealPlannerApp",
-        "projectPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meat planner\\MealPlannerApp\\MealPlannerApp.csproj",
+        "projectPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
         "packagesPath": "C:\\Users\\dean\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meat planner\\MealPlannerApp\\obj\\",
+        "outputPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\dean\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -48,7 +48,7 @@
               "target": "Package",
               "version": "[8.0.0, )"
             },
-            "Microsoft.EntityFrameworkCore.SqlServer": {
+            "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[8.0.0, )"
             },

@@ -32,6 +32,13 @@
         <span asp-validation-for="MealType" class="text-danger"></span>
     </div>
 
+    <div class="mb-3">
+        <label asp-for="PortionMultiplier" class="form-label"></label>
+        <input asp-for="PortionMultiplier" class="form-control" min="0.5" max="3" step="0.1" />
+        <div class="form-text">Use 1.0 for the base recipe portion.</div>
+        <span asp-validation-for="PortionMultiplier" class="text-danger"></span>
+    </div>
+
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Add Meal</button>
         <a asp-action="Weekly" asp-route-userId="@Model.UserId" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">Back</a>

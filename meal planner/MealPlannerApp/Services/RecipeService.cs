@@ -70,6 +70,7 @@ public class RecipeService : IRecipeService
 
         existingRecipe.Name = recipe.Name;
         existingRecipe.Description = recipe.Description;
+        existingRecipe.Instructions = recipe.Instructions;
         existingRecipe.CookingTime = recipe.CookingTime;
         existingRecipe.Calories = recipe.Calories;
         existingRecipe.IsVegetarian = recipe.IsVegetarian;

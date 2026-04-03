@@ -118,9 +118,18 @@ public class RecipesController : Controller
             Id = recipe.Id,
             Name = recipe.Name,
             Description = recipe.Description,
+            Instructions = recipe.Instructions,
             CookingTime = recipe.CookingTime,
             Calories = recipe.Calories,
-            IsVegetarian = recipe.IsVegetarian
+            IsVegetarian = recipe.IsVegetarian,
+            Ingredients = recipe.RecipeIngredients
+                .OrderBy(ri => ri.Ingredient.Name)
+                .Select(ri => new RecipeIngredientDto
+                {
+                    Name = ri.Ingredient.Name,
+                    QuantityInGrams = ri.QuantityInGrams
+                })
+                .ToList()
         };
     }
 
@@ -131,6 +140,7 @@ public class RecipesController : Controller
             Id = dto.Id,
             Name = dto.Name,
             Description = dto.Description,
+            Instructions = dto.Instructions,
             CookingTime = dto.CookingTime,
             Calories = dto.Calories,
             IsVegetarian = dto.IsVegetarian

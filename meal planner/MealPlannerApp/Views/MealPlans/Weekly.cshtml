@@ -3,7 +3,7 @@
     ViewData["Title"] = "Weekly Meal Planner";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
     <div>
         <h1 class="h3 mb-1">Weekly Meal Planner</h1>
         <p class="text-muted mb-0">@Model.WeekStart:dd MMM yyyy - @Model.WeekEnd:dd MMM yyyy</p>
@@ -11,21 +11,101 @@
     <a asp-action="AddMeal" asp-route-userId="@Model.UserId" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-primary">Add Meal</a>
 </div>
 
-<form asp-action="Weekly" method="get" class="card card-body mb-4">
-    <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label">User ID</label>
-            <input type="number" name="userId" value="@Model.UserId" class="form-control" min="1" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Week Start</label>
-            <input type="date" name="weekStart" value="@Model.WeekStart.ToString("yyyy-MM-dd")" class="form-control" />
-        </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-outline-primary w-100">Load Week</button>
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                        <h2 class="h5 mb-1">Starter Plans for Beginners</h2>
+                        <p class="text-muted mb-0">Pick a ready-made week and the portions will scale from a 70 kg reference plan.</p>
+                    </div>
+                    <span class="badge text-bg-light">3 meals per day</span>
+                </div>
+
+                @if (Model.PresetPlans.Any())
+                {
+                    <form asp-action="StartPreset" method="post">
+                        <input asp-for="StartPresetPlan.UserId" type="hidden" />
+                        <input asp-for="StartPresetPlan.WeekStart" type="hidden" />
+
+                        <div class="row g-3 mb-3">
+                            @for (var index = 0; index < Model.PresetPlans.Count; index++)
+                            {
+                                var plan = Model.PresetPlans.ElementAt(index);
+                                var radioId = $"preset-{plan.Key}";
+                                <div class="col-md-6">
+                                    <label class="card h-100 border-2 @(Model.StartPresetPlan.PresetKey == plan.Key ? "border-primary" : "border-light")" for="@radioId">
+                                        <div class="card-body">
+                                            <div class="form-check mb-2">
+                                                <input asp-for="StartPresetPlan.PresetKey" class="form-check-input" type="radio" value="@plan.Key" id="@radioId" />
+                                                <span class="form-check-label fw-semibold">@plan.Name</span>
+                                            </div>
+                                            <p class="small text-muted mb-2">@plan.Description</p>
+                                            <div class="small mb-1">Around <strong>@plan.AverageDailyCaloriesAtReferenceWeight kcal/day</strong> at 70 kg.</div>
+                                            <div class="small text-muted">Recipes: @string.Join(", ", plan.FeaturedRecipes)</div>
+                                            @if (plan.IsVegetarian)
+                                            {
+                                                <div class="mt-2"><span class="badge text-bg-success">Vegetarian</span></div>
+                                            }
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label asp-for="StartPresetPlan.BodyWeightKg" class="form-label"></label>
+                                <input asp-for="StartPresetPlan.BodyWeightKg" class="form-control" min="40" max="180" step="0.1" />
+                                <span asp-validation-for="StartPresetPlan.BodyWeightKg" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="small text-muted mb-2">This replaces the selected week for the chosen user with the starter plan meals and scaled portions.</div>
+                                <button type="submit" class="btn btn-success">Start Selected Plan</button>
+                            </div>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <p class="mb-0 text-muted">Starter plans are unavailable because one or more required recipes are missing.</p>
+                }
+            </div>
         </div>
     </div>
-</form>
+
+    <div class="col-lg-5">
+        <form asp-action="Weekly" method="get" class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Load a Week</h2>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label">User ID</label>
+                        <input type="number" name="userId" value="@Model.UserId" class="form-control" min="1" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Week Start</label>
+                        <input type="date" name="weekStart" value="@Model.WeekStart.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-outline-primary w-100">Load Week</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div class="row g-3 mb-4">
     <div class="col-md-6">
@@ -73,8 +153,11 @@
                         <ul class="list-group list-group-flush">
                             @foreach (var meal in day.Meals)
                             {
-                                <li class="list-group-item d-flex justify-content-between px-0">
-                                    <span><strong>@meal.MealType</strong>: @meal.RecipeName</span>
+                                <li class="list-group-item d-flex justify-content-between align-items-start px-0">
+                                    <div>
+                                        <div><strong>@meal.MealType</strong>: @meal.RecipeName</div>
+                                        <div class="small text-muted">Portion x@meal.PortionMultiplier.ToString("0.##")</div>
+                                    </div>
                                     <span>@meal.Calories kcal</span>
                                 </li>
                             }
@@ -89,3 +172,7 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
