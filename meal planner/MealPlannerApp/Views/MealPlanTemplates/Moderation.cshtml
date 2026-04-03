@@ -1,0 +1,56 @@
+@model IEnumerable<MealPlannerApp.Dtos.MealPlanTemplates.MealPlanTemplateDto>
+@{
+    ViewData["Title"] = "Plan Template Moderation";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-0">Plan Template Moderation</h1>
+        <p class="text-muted mb-0">Review pending weekly templates before they become visible to everyone.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back To Templates</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-light border">There are no plan templates waiting for review.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var template in Model)
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h2 class="h5 mb-1">@template.Name</h2>
+                                <div class="text-muted small">By @template.OwnerUserName, @template.WeeklyTotalCalories kcal/week</div>
+                            </div>
+                            <span class="badge text-bg-warning">@template.ApprovalStatus</span>
+                        </div>
+                        <p class="mb-3">@template.Description</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a asp-action="Details" asp-route-id="@template.Id" class="btn btn-sm btn-outline-info">Open Details</a>
+                            <form asp-action="Approve" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@template.Id" />
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                        </div>
+                        <form asp-action="Reject" method="post" class="row g-2 align-items-end">
+                            <input type="hidden" name="Id" value="@template.Id" />
+                            <div class="col-md-9">
+                                <label class="form-label">Feedback</label>
+                                <textarea name="ReviewNotes" class="form-control" rows="2" placeholder="Explain what needs to change"></textarea>
+                            </div>
+                            <div class="col-md-3 d-grid">
+                                <button type="submit" class="btn btn-outline-danger">Reject</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

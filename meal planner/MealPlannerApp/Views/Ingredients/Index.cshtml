@@ -5,7 +5,10 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Ingredients</h1>
-    <a asp-action="Create" class="btn btn-primary">Create Ingredient</a>
+    @if (User.IsInRole(ApplicationRoles.Admin))
+    {
+        <a asp-action="Create" class="btn btn-primary">Create Ingredient</a>
+    }
 </div>
 
 <div class="table-responsive">
@@ -25,8 +28,11 @@
                 <td>@ingredient.CaloriesPer100g</td>
                 <td class="text-end">
                     <a asp-action="Details" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-info">Details</a>
-                    <a asp-action="Edit" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    @if (User.IsInRole(ApplicationRoles.Admin))
+                    {
+                        <a asp-action="Edit" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@ingredient.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    }
                 </td>
             </tr>
         }

@@ -1,0 +1,47 @@
+@model MealPlannerApp.Dtos.MealPlanTemplates.CreateMealPlanTemplateDto
+@{
+    ViewData["Title"] = "Create Plan Template";
+}
+
+<h1 class="h3 mb-3">Create Plan Template From My Week</h1>
+
+<form asp-action="CreateFromWeek" method="post" class="card card-body">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="WeekStart" class="form-label"></label>
+            <input asp-for="WeekStart" class="form-control" type="date" />
+            <span asp-validation-for="WeekStart" class="text-danger"></span>
+        </div>
+        <div class="col-md-8">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Explain what makes this week useful"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mt-3">
+        <input asp-for="SubmitForReview" class="form-check-input" />
+        <label asp-for="SubmitForReview" class="form-check-label">Submit immediately for admin review</label>
+    </div>
+
+    <div class="alert alert-light border mt-4 mb-0">
+        Your live weekly plan stays private. This action copies that week into a separate shareable template.
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Create Template</button>
+        <a asp-controller="MealPlans" asp-action="Weekly" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">Back To Planner</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

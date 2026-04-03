@@ -1,13 +1,16 @@
 using MealPlannerApp.Dtos.MealPlans;
+using MealPlannerApp.Infrastructure;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services;
 using MealPlannerApp.Services.Interfaces;
 using MealPlannerApp.Services.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace MealPlannerApp.Controllers;
 
+[Authorize]
 public class MealPlansController : Controller
 {
     private readonly IMealPlanService _mealPlanService;
@@ -21,14 +24,14 @@ public class MealPlansController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var mealPlans = await _mealPlanService.GetAllMealPlans();
+        var mealPlans = await _mealPlanService.GetAllMealPlans(User.GetRequiredUserId());
         var dto = mealPlans.Select(MapToDto).ToList();
         return View(dto);
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        var mealPlan = await _mealPlanService.GetMealPlanById(id);
+        var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
         if (mealPlan is null)
         {
             return NotFound();
@@ -51,13 +54,13 @@ public class MealPlansController : Controller
             return View(dto);
         }
 
-        await _mealPlanService.CreateMealPlan(MapToEntity(dto));
+        await _mealPlanService.CreateMealPlan(User.GetRequiredUserId(), MapToEntity(dto));
         return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Edit(int id)
     {
-        var mealPlan = await _mealPlanService.GetMealPlanById(id);
+        var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
         if (mealPlan is null)
         {
             return NotFound();
@@ -80,7 +83,7 @@ public class MealPlansController : Controller
             return View(dto);
         }
 
-        var updated = await _mealPlanService.UpdateMealPlan(MapToEntity(dto));
+        var updated = await _mealPlanService.UpdateMealPlan(User.GetRequiredUserId(), MapToEntity(dto));
         if (!updated)
         {
             return NotFound();
@@ -91,7 +94,7 @@ public class MealPlansController : Controller
 
     public async Task<IActionResult> Delete(int id)
     {
-        var mealPlan = await _mealPlanService.GetMealPlanById(id);
+        var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
         if (mealPlan is null)
         {
             return NotFound();
@@ -104,7 +107,7 @@ public class MealPlansController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var deleted = await _mealPlanService.DeleteMealPlan(id);
+        var deleted = await _mealPlanService.DeleteMealPlan(id, User.GetRequiredUserId());
         if (!deleted)
         {
             return NotFound();
@@ -113,9 +116,9 @@ public class MealPlansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    public async Task<IActionResult> Weekly(int userId = 1, DateTime? weekStart = null)
+    public async Task<IActionResult> Weekly(DateTime? weekStart = null)
     {
-        var model = await BuildWeeklyPlannerModel(userId, weekStart);
+        var model = await BuildWeeklyPlannerModel(weekStart);
         return View(model);
     }
 
@@ -125,7 +128,7 @@ public class MealPlansController : Controller
     {
         if (!ModelState.IsValid)
         {
-            var invalidModel = await BuildWeeklyPlannerModel(dto.UserId > 0 ? dto.UserId : 1, dto.WeekStart, dto);
+            var invalidModel = await BuildWeeklyPlannerModel(dto.WeekStart, dto);
             return View(nameof(Weekly), invalidModel);
         }
 
@@ -133,7 +136,7 @@ public class MealPlansController : Controller
         {
             await _mealPlanService.StartPresetMealPlan(new StartPresetMealPlanRequest
             {
-                UserId = dto.UserId,
+                UserId = User.GetRequiredUserId(),
                 WeekStart = dto.WeekStart,
                 PresetKey = dto.PresetKey,
                 BodyWeightKg = dto.BodyWeightKg
@@ -142,38 +145,34 @@ public class MealPlansController : Controller
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            var errorModel = await BuildWeeklyPlannerModel(dto.UserId, dto.WeekStart, dto);
+            var errorModel = await BuildWeeklyPlannerModel(dto.WeekStart, dto);
             return View(nameof(Weekly), errorModel);
         }
 
         TempData["SuccessMessage"] = "Starter plan added to the selected week.";
-        return RedirectToAction(nameof(Weekly), new { userId = dto.UserId, weekStart = dto.WeekStart.ToString("yyyy-MM-dd") });
+        return RedirectToAction(nameof(Weekly), new { weekStart = dto.WeekStart.ToString("yyyy-MM-dd") });
     }
 
-    public async Task<IActionResult> AddMeal(int userId = 1, DateTime? weekStart = null)
+    public async Task<IActionResult> AddMeal(DateTime? weekStart = null)
     {
+        var userId = User.GetRequiredUserId();
         var result = await _mealPlanService.GetWeeklyPlan(userId, weekStart);
-        if (!result.MealPlans.Any())
+        for (var offset = 0; offset < 7; offset++)
         {
-            for (var offset = 0; offset < 7; offset++)
+            await _mealPlanService.CreateMealPlan(userId, new MealPlan
             {
-                await _mealPlanService.CreateMealPlan(new MealPlan
-                {
-                    UserId = userId,
-                    Date = result.WeekStart.AddDays(offset)
-                });
-            }
-
-            result = await _mealPlanService.GetWeeklyPlan(userId, result.WeekStart);
+                Date = result.WeekStart.AddDays(offset)
+            });
         }
+
+        result = await _mealPlanService.GetWeeklyPlan(userId, result.WeekStart);
 
         var model = new AddMealDto
         {
-            UserId = userId,
             WeekStart = result.WeekStart
         };
 
-        await PopulateAddMealLookups(userId, result.WeekStart);
+        await PopulateAddMealLookups(result.WeekStart);
         return View(model);
     }
 
@@ -183,24 +182,30 @@ public class MealPlansController : Controller
     {
         if (!ModelState.IsValid)
         {
-            await PopulateAddMealLookups(dto.UserId, dto.WeekStart);
+            await PopulateAddMealLookups(dto.WeekStart);
             return View(dto);
         }
 
-        await _mealPlanService.AddMealToPlan(dto.MealPlanId, new Meal
+        var meal = await _mealPlanService.AddMealToPlan(dto.MealPlanId, User.GetRequiredUserId(), User.IsInRole(ApplicationRoles.Admin), new Meal
         {
             RecipeId = dto.RecipeId,
             MealType = dto.MealType,
             PortionMultiplier = dto.PortionMultiplier
         });
+        if (meal is null)
+        {
+            ModelState.AddModelError(string.Empty, "Choose a valid day and a recipe you are allowed to use.");
+            await PopulateAddMealLookups(dto.WeekStart);
+            return View(dto);
+        }
 
-        return RedirectToAction(nameof(Weekly), new { userId = dto.UserId, weekStart = dto.WeekStart.ToString("yyyy-MM-dd") });
+        return RedirectToAction(nameof(Weekly), new { weekStart = dto.WeekStart.ToString("yyyy-MM-dd") });
     }
 
-    private async Task PopulateAddMealLookups(int userId, DateTime weekStart)
+    private async Task PopulateAddMealLookups(DateTime weekStart)
     {
-        var weeklyPlan = await _mealPlanService.GetWeeklyPlan(userId, weekStart);
-        var recipes = await _recipeService.GetAllRecipes();
+        var weeklyPlan = await _mealPlanService.GetWeeklyPlan(User.GetRequiredUserId(), weekStart);
+        var recipes = await _recipeService.GetAllRecipes(User.GetRequiredUserId(), User.IsInRole(ApplicationRoles.Admin));
 
         ViewBag.MealPlans = weeklyPlan.MealPlans
             .OrderBy(mp => mp.Date)
@@ -222,11 +227,10 @@ public class MealPlansController : Controller
     }
 
     private async Task<WeeklyMealPlannerDto> BuildWeeklyPlannerModel(
-        int userId,
         DateTime? weekStart,
         StartPresetMealPlanDto? startPresetPlan = null)
     {
-        var result = await _mealPlanService.GetWeeklyPlan(userId, weekStart);
+        var result = await _mealPlanService.GetWeeklyPlan(User.GetRequiredUserId(), weekStart);
         var presetPlans = (await _mealPlanService.GetPresetMealPlans())
             .Select(plan => new PresetMealPlanOptionDto
             {
@@ -241,7 +245,6 @@ public class MealPlansController : Controller
 
         var startPresetModel = startPresetPlan ?? new StartPresetMealPlanDto
         {
-            UserId = userId,
             WeekStart = result.WeekStart,
             BodyWeightKg = 70,
             PresetKey = presetPlans.FirstOrDefault()?.Key ?? string.Empty
@@ -249,7 +252,6 @@ public class MealPlansController : Controller
 
         if (startPresetPlan is not null)
         {
-            startPresetModel.UserId = startPresetPlan.UserId > 0 ? startPresetPlan.UserId : userId;
             startPresetModel.WeekStart = startPresetPlan.WeekStart == default ? result.WeekStart : startPresetPlan.WeekStart;
             if (string.IsNullOrWhiteSpace(startPresetModel.PresetKey))
             {
@@ -257,12 +259,11 @@ public class MealPlansController : Controller
             }
         }
 
-        return BuildWeeklyPlannerDto(result, userId, presetPlans, startPresetModel);
+        return BuildWeeklyPlannerDto(result, presetPlans, startPresetModel);
     }
 
     private static WeeklyMealPlannerDto BuildWeeklyPlannerDto(
         WeeklyMealPlanResult result,
-        int userId,
         IReadOnlyCollection<PresetMealPlanOptionDto> presetPlans,
         StartPresetMealPlanDto startPresetPlan)
     {
@@ -291,7 +292,6 @@ public class MealPlansController : Controller
 
         return new WeeklyMealPlannerDto
         {
-            UserId = userId,
             WeekStart = result.WeekStart,
             WeekEnd = result.WeekEnd,
             WeeklyTotalCalories = result.WeeklyTotalCalories,
@@ -355,7 +355,6 @@ public class MealPlansController : Controller
         return new MealPlanDto
         {
             Id = mealPlan.Id,
-            UserId = mealPlan.UserId,
             Date = mealPlan.Date,
             MealsCount = mealItems.Count,
             TotalCalories = mealItems.Sum(m => m.Calories),
@@ -369,7 +368,6 @@ public class MealPlansController : Controller
         return new MealPlan
         {
             Id = dto.Id,
-            UserId = dto.UserId,
             Date = dto.Date
         };
     }

@@ -1,6 +1,7 @@
 using MealPlannerApp.Data;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services.Interfaces;
+using MealPlannerApp.Services.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
@@ -49,16 +50,31 @@ public class IngredientService : IIngredientService
         return true;
     }
 
-    public async Task<bool> DeleteIngredient(int id)
+    public async Task<DeleteOperationResult> DeleteIngredient(int id)
     {
         var ingredient = await _dbContext.Ingredients.FindAsync(id);
         if (ingredient is null)
         {
-            return false;
+            return DeleteOperationResult.NotFound;
+        }
+
+        var isInUse = await _dbContext.RecipeIngredients
+            .AnyAsync(ri => ri.IngredientId == id);
+        if (isInUse)
+        {
+            return DeleteOperationResult.InUse;
         }
 
         _dbContext.Ingredients.Remove(ingredient);
-        await _dbContext.SaveChangesAsync();
-        return true;
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return DeleteOperationResult.InUse;
+        }
+
+        return DeleteOperationResult.Deleted;
     }
 }

@@ -1,10 +1,15 @@
 using System.ComponentModel.DataAnnotations;
+using MealPlannerApp.Models;
 
 namespace MealPlannerApp.Dtos.Recipes;
 
 public class RecipeDto
 {
     public int Id { get; set; }
+    public int OwnerId { get; set; }
+    public string OwnerUserName { get; set; } = string.Empty;
+    public ApprovalStatus ApprovalStatus { get; set; }
+    public string? ReviewNotes { get; set; }
 
     [Required]
     public string Name { get; set; } = string.Empty;

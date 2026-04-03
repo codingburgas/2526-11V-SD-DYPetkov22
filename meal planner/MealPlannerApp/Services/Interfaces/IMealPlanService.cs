@@ -5,12 +5,12 @@ namespace MealPlannerApp.Services.Interfaces;
 
 public interface IMealPlanService
 {
-    Task<IEnumerable<MealPlan>> GetAllMealPlans();
-    Task<MealPlan?> GetMealPlanById(int id);
-    Task<MealPlan> CreateMealPlan(MealPlan mealPlan);
-    Task<bool> UpdateMealPlan(MealPlan mealPlan);
-    Task<bool> DeleteMealPlan(int id);
-    Task<Meal> AddMealToPlan(int mealPlanId, Meal meal);
+    Task<IEnumerable<MealPlan>> GetAllMealPlans(int userId);
+    Task<MealPlan?> GetMealPlanById(int id, int userId);
+    Task<MealPlan> CreateMealPlan(int userId, MealPlan mealPlan);
+    Task<bool> UpdateMealPlan(int userId, MealPlan mealPlan);
+    Task<bool> DeleteMealPlan(int id, int userId);
+    Task<Meal?> AddMealToPlan(int mealPlanId, int userId, bool isAdmin, Meal meal);
     Task<WeeklyMealPlanResult> GetWeeklyPlan(int userId, DateTime? weekStart = null);
     Task<IReadOnlyCollection<PresetMealPlanOptionResult>> GetPresetMealPlans();
     Task StartPresetMealPlan(StartPresetMealPlanRequest request);

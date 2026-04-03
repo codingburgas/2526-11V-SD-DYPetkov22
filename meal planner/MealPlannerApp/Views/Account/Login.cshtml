@@ -1,0 +1,42 @@
+@model MealPlannerApp.Dtos.Account.LoginDto
+@{
+    ViewData["Title"] = "Log In";
+}
+
+<div class="card shadow-sm auth-card">
+    <div class="card-body">
+        <h1 class="h3 mb-1">Welcome back</h1>
+        <p class="text-muted mb-4">Sign in to manage your personal meal plans.</p>
+
+        <form asp-action="Login" method="post">
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Login" class="form-label"></label>
+                <input asp-for="Login" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Login" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-4">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Log In</button>
+                <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-secondary">Create a New Account</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

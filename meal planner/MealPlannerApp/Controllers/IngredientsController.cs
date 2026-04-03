@@ -1,6 +1,9 @@
 using MealPlannerApp.Dtos.Ingredients;
+using MealPlannerApp.Infrastructure;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services.Interfaces;
+using MealPlannerApp.Services.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MealPlannerApp.Controllers;
@@ -32,11 +35,13 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public IActionResult Create()
     {
         return View(new IngredientDto());
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(IngredientDto dto)
@@ -50,6 +55,7 @@ public class IngredientsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Edit(int id)
     {
         var ingredient = await _ingredientService.GetIngredientById(id);
@@ -61,6 +67,7 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, IngredientDto dto)
@@ -84,6 +91,7 @@ public class IngredientsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
         var ingredient = await _ingredientService.GetIngredientById(id);
@@ -95,14 +103,21 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var deleted = await _ingredientService.DeleteIngredient(id);
-        if (!deleted)
+        if (deleted == DeleteOperationResult.NotFound)
         {
             return NotFound();
+        }
+
+        if (deleted == DeleteOperationResult.InUse)
+        {
+            TempData["ErrorMessage"] = "This ingredient is still used by one or more recipes and cannot be deleted.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         return RedirectToAction(nameof(Index));

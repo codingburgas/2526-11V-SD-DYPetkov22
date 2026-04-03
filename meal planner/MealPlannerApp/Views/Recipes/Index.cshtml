@@ -1,11 +1,18 @@
 @model IEnumerable<MealPlannerApp.Dtos.Recipes.RecipeDto>
 @{
     ViewData["Title"] = "Recipes";
+    var currentUserId = User.Identity?.IsAuthenticated == true ? User.GetRequiredUserId() : -1;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Recipes</h1>
-    <a asp-action="Create" class="btn btn-primary">Create Recipe</a>
+    <div>
+        <h1 class="h3 mb-0">Recipes</h1>
+        <p class="text-muted mb-0">Approved recipes are public. Your drafts and submissions stay visible only to you and admins until approved.</p>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="Create" class="btn btn-primary">Create Recipe</a>
+    }
 </div>
 
 <form asp-action="Index" method="get" class="card card-body mb-3">
@@ -33,27 +40,54 @@
         <thead>
         <tr>
             <th>Name</th>
+            <th>Owner</th>
+            <th>Status</th>
             <th>Cook Time</th>
             <th>Calories</th>
-            <th>Vegetarian</th>
             <th class="text-end">Actions</th>
         </tr>
         </thead>
         <tbody>
         @foreach (var recipe in Model)
         {
+            var isOwner = recipe.OwnerId == currentUserId;
             <tr>
-                <td>@recipe.Name</td>
+                <td>
+                    <div class="fw-semibold">@recipe.Name</div>
+                    @if (recipe.ApprovalStatus != ApprovalStatus.Approved)
+                    {
+                        <div class="small text-muted">Private until approved</div>
+                    }
+                </td>
+                <td>@recipe.OwnerUserName</td>
+                <td>
+                    <span class="badge @GetBadgeClass(recipe.ApprovalStatus)">@recipe.ApprovalStatus</span>
+                </td>
                 <td>@recipe.CookingTime min</td>
                 <td>@recipe.Calories kcal</td>
-                <td>@(recipe.IsVegetarian ? "Yes" : "No")</td>
                 <td class="text-end">
                     <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-info">Details</a>
-                    <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    @if (User.IsInRole(ApplicationRoles.Admin) || (isOwner && recipe.ApprovalStatus != ApprovalStatus.Approved))
+                    {
+                        <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    }
                 </td>
             </tr>
         }
         </tbody>
     </table>
 </div>
+
+@functions {
+    private static string GetBadgeClass(ApprovalStatus status)
+    {
+        return status switch
+        {
+            ApprovalStatus.Approved => "text-bg-success",
+            ApprovalStatus.PendingReview => "text-bg-warning",
+            ApprovalStatus.Rejected => "text-bg-danger",
+            _ => "text-bg-secondary"
+        };
+    }
+}

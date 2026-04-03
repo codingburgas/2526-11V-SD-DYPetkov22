@@ -6,7 +6,6 @@
 <h1 class="h3 mb-3">Add Meal</h1>
 
 <form asp-action="AddMeal" method="post" class="card card-body">
-    <input type="hidden" asp-for="UserId" />
     <input type="hidden" asp-for="WeekStart" />
     <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
@@ -41,7 +40,7 @@
 
     <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Add Meal</button>
-        <a asp-action="Weekly" asp-route-userId="@Model.UserId" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">Back</a>
+        <a asp-action="Weekly" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-outline-secondary">Back</a>
     </div>
 </form>
 

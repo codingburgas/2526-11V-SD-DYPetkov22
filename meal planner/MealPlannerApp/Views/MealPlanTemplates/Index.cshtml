@@ -1,0 +1,76 @@
+@model IEnumerable<MealPlannerApp.Dtos.MealPlanTemplates.MealPlanTemplateDto>
+@{
+    ViewData["Title"] = "Shared Plan Templates";
+    var currentUserId = User.Identity?.IsAuthenticated == true ? User.GetRequiredUserId() : -1;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-0">Shared Plan Templates</h1>
+        <p class="text-muted mb-0">Approved templates are public. Your own drafts and submissions stay private until approved.</p>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="CreateFromWeek" class="btn btn-primary">Create From My Week</a>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-light border">No shared templates are available yet.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var template in Model)
+        {
+            var isOwner = template.OwnerId == currentUserId;
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                            <div>
+                                <h2 class="h5 mb-1">@template.Name</h2>
+                                <div class="small text-muted">By @template.OwnerUserName</div>
+                            </div>
+                            <span class="badge @GetBadgeClass(template.ApprovalStatus)">@template.ApprovalStatus</span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(template.Description))
+                        {
+                            <p class="mb-3">@template.Description</p>
+                        }
+                        <div class="small text-muted mb-3">Weekly calories: @template.WeeklyTotalCalories</div>
+                        @if (template.ApprovalStatus != ApprovalStatus.Approved)
+                        {
+                            <div class="small text-muted mb-3">Private until approved. Only you and admins can see it.</div>
+                        }
+                        <div class="d-flex flex-wrap gap-2">
+                            <a asp-action="Details" asp-route-id="@template.Id" class="btn btn-sm btn-outline-info">Details</a>
+                            @if (User.Identity?.IsAuthenticated == true && (template.ApprovalStatus == ApprovalStatus.Approved || isOwner || User.IsInRole(ApplicationRoles.Admin)))
+                            {
+                                <form asp-action="Apply" method="post" class="d-flex gap-2">
+                                    <input type="hidden" name="id" value="@template.Id" />
+                                    <input type="date" name="weekStart" value="@WeekDateHelper.GetCurrentWeekStart().ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    private static string GetBadgeClass(ApprovalStatus status)
+    {
+        return status switch
+        {
+            ApprovalStatus.Approved => "text-bg-success",
+            ApprovalStatus.PendingReview => "text-bg-warning",
+            ApprovalStatus.Rejected => "text-bg-danger",
+            _ => "text-bg-secondary"
+        };
+    }
+}

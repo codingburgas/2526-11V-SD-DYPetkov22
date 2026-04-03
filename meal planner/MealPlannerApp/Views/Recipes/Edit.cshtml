@@ -23,7 +23,7 @@
 
     <div class="mb-3">
         <label asp-for="Instructions" class="form-label">Cooking Instructions</label>
-        <textarea asp-for="Instructions" class="form-control" rows="6" placeholder="Describe the cooking steps"></textarea>
+        <textarea asp-for="Instructions" class="form-control" rows="6"></textarea>
         <span asp-validation-for="Instructions" class="text-danger"></span>
     </div>
 
@@ -45,9 +45,17 @@
         <label asp-for="IsVegetarian" class="form-check-label"></label>
     </div>
 
+    @if (!string.IsNullOrWhiteSpace(Model.ReviewNotes))
+    {
+        <div class="alert alert-warning mt-4 mb-0">
+            <strong>Admin feedback:</strong> @Model.ReviewNotes
+        </div>
+    }
+
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" name="submitForReview" value="false" class="btn btn-outline-secondary">Save Draft</button>
+        <button type="submit" name="submitForReview" value="true" class="btn btn-primary">Save And Submit</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
     </div>
 </form>
 

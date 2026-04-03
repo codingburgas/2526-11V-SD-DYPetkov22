@@ -44,8 +44,13 @@
         <label asp-for="IsVegetarian" class="form-check-label"></label>
     </div>
 
+    <div class="alert alert-light border mt-4 mb-0">
+        <strong>Publishing flow:</strong> save a private draft first or submit directly for admin approval. Until approval, only you and admins can see it.
+    </div>
+
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" name="submitForReview" value="false" class="btn btn-outline-secondary">Save Draft</button>
+        <button type="submit" name="submitForReview" value="true" class="btn btn-primary">Submit For Review</button>
         <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
     </div>
 </form>

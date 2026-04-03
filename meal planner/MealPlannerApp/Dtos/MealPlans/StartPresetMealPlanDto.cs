@@ -4,9 +4,6 @@ namespace MealPlannerApp.Dtos.MealPlans;
 
 public class StartPresetMealPlanDto
 {
-    [Range(1, int.MaxValue)]
-    public int UserId { get; set; } = 1;
-
     [Required]
     [DataType(DataType.Date)]
     public DateTime WeekStart { get; set; } = DateTime.Today;

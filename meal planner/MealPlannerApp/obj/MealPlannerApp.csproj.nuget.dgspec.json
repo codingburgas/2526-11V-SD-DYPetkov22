@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {}
+    "C:\\projects\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {
+    "C:\\projects\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
+        "projectUniqueName": "C:\\projects\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
         "projectName": "MealPlannerApp",
-        "projectPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
-        "packagesPath": "C:\\Users\\dean\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dean\\project\\project-DYPetkov22\\meal planner\\MealPlannerApp\\obj\\",
+        "projectPath": "C:\\projects\\project-DYPetkov22\\meal planner\\MealPlannerApp\\MealPlannerApp.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\projects\\project-DYPetkov22\\meal planner\\MealPlannerApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\dean\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -37,13 +37,16 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
+        }
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -70,24 +73,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.24, 8.0.24]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.24, 8.0.24]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.24, 8.0.24]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.24, 8.0.24]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -96,7 +81,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

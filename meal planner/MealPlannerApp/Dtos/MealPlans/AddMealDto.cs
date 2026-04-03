@@ -14,9 +14,6 @@ public class AddMealDto
     [Required]
     public MealType MealType { get; set; } = MealType.Breakfast;
 
-    [Range(1, int.MaxValue)]
-    public int UserId { get; set; }
-
     [DataType(DataType.Date)]
     public DateTime WeekStart { get; set; }
 

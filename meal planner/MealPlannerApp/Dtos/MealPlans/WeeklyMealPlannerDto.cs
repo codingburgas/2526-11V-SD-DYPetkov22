@@ -2,7 +2,6 @@ namespace MealPlannerApp.Dtos.MealPlans;
 
 public class WeeklyMealPlannerDto
 {
-    public int UserId { get; set; }
     public DateTime WeekStart { get; set; }
     public DateTime WeekEnd { get; set; }
     public int WeeklyTotalCalories { get; set; }

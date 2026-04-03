@@ -6,9 +6,6 @@ public class MealPlanDto
 {
     public int Id { get; set; }
 
-    [Range(1, int.MaxValue)]
-    public int UserId { get; set; }
-
     [Required]
     [DataType(DataType.Date)]
     public DateTime Date { get; set; }

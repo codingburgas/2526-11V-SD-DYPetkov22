@@ -1,7 +1,57 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Use the navigation buttons above to manage recipes, ingredients, and meal plans.</p>
+
+<div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold">Plan meals without the spreadsheet chaos.</h1>
+        <p class="col-lg-8 fs-5 text-muted mb-4">
+            Browse recipes, review ingredients, and build weekly meal plans tied to your own account.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="btn btn-primary btn-lg" asp-controller="MealPlans" asp-action="Weekly">Open My Planner</a>
+                <a class="btn btn-outline-primary btn-lg" asp-controller="MealPlans" asp-action="Index">View My Plans</a>
+            }
+            else
+            {
+                <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Create Account</a>
+                <a class="btn btn-outline-primary btn-lg" asp-controller="Account" asp-action="Login">Log In</a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Recipes</h2>
+                <p class="text-muted">Filter meals by ingredient, vegetarian status, or higher-protein options.</p>
+                <a class="btn btn-outline-primary" asp-controller="Recipes" asp-action="Index">Browse Recipes</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Ingredients</h2>
+                <p class="text-muted">Inspect ingredient calories and build a consistent recipe catalog.</p>
+                <a class="btn btn-outline-primary" asp-controller="Ingredients" asp-action="Index">View Ingredients</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Weekly Planning</h2>
+                <p class="text-muted">Keep your live planner private, then turn a good week into a shareable template when you want to publish it.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-primary" asp-controller="MealPlans" asp-action="Weekly">Go To Planner</a>
+                    <a class="btn btn-outline-secondary" asp-controller="MealPlanTemplates" asp-action="Index">Browse Shared Plans</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

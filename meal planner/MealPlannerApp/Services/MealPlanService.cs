@@ -1,4 +1,5 @@
 using MealPlannerApp.Data;
+using MealPlannerApp.Infrastructure;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services.Interfaces;
 using MealPlannerApp.Services.Models;
@@ -100,9 +101,10 @@ public class MealPlanService : IMealPlanService
         _dbContext = dbContext;
     }
 
-    public async Task<IEnumerable<MealPlan>> GetAllMealPlans()
+    public async Task<IEnumerable<MealPlan>> GetAllMealPlans(int userId)
     {
         return await _dbContext.MealPlans
+            .Where(mp => mp.UserId == userId)
             .Include(mp => mp.User)
             .Include(mp => mp.Meals)
             .ThenInclude(m => m.Recipe)
@@ -112,9 +114,10 @@ public class MealPlanService : IMealPlanService
             .ToListAsync();
     }
 
-    public async Task<MealPlan?> GetMealPlanById(int id)
+    public async Task<MealPlan?> GetMealPlanById(int id, int userId)
     {
         return await _dbContext.MealPlans
+            .Where(mp => mp.UserId == userId)
             .Include(mp => mp.User)
             .Include(mp => mp.Meals)
             .ThenInclude(m => m.Recipe)
@@ -123,31 +126,45 @@ public class MealPlanService : IMealPlanService
             .FirstOrDefaultAsync(mp => mp.Id == id);
     }
 
-    public async Task<MealPlan> CreateMealPlan(MealPlan mealPlan)
+    public async Task<MealPlan> CreateMealPlan(int userId, MealPlan mealPlan)
     {
+        var targetDate = mealPlan.Date.Date;
+        var existingMealPlan = await _dbContext.MealPlans
+            .FirstOrDefaultAsync(mp =>
+                mp.UserId == userId &&
+                mp.Date >= targetDate &&
+                mp.Date < targetDate.AddDays(1));
+        if (existingMealPlan is not null)
+        {
+            return existingMealPlan;
+        }
+
+        mealPlan.UserId = userId;
+        mealPlan.Date = targetDate;
         mealPlan.CreatedAt = DateTime.UtcNow;
         _dbContext.MealPlans.Add(mealPlan);
         await _dbContext.SaveChangesAsync();
         return mealPlan;
     }
 
-    public async Task<bool> UpdateMealPlan(MealPlan mealPlan)
+    public async Task<bool> UpdateMealPlan(int userId, MealPlan mealPlan)
     {
-        var existingMealPlan = await _dbContext.MealPlans.FindAsync(mealPlan.Id);
+        var existingMealPlan = await _dbContext.MealPlans
+            .FirstOrDefaultAsync(mp => mp.Id == mealPlan.Id && mp.UserId == userId);
         if (existingMealPlan is null)
         {
             return false;
         }
 
-        existingMealPlan.UserId = mealPlan.UserId;
-        existingMealPlan.Date = mealPlan.Date;
+        existingMealPlan.Date = mealPlan.Date.Date;
         await _dbContext.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> DeleteMealPlan(int id)
+    public async Task<bool> DeleteMealPlan(int id, int userId)
     {
-        var mealPlan = await _dbContext.MealPlans.FindAsync(id);
+        var mealPlan = await _dbContext.MealPlans
+            .FirstOrDefaultAsync(mp => mp.Id == id && mp.UserId == userId);
         if (mealPlan is null)
         {
             return false;
@@ -158,13 +175,47 @@ public class MealPlanService : IMealPlanService
         return true;
     }
 
-    public async Task<Meal> AddMealToPlan(int mealPlanId, Meal meal)
+    public async Task<Meal?> AddMealToPlan(int mealPlanId, int userId, bool isAdmin, Meal meal)
     {
+        var mealPlanExists = await _dbContext.MealPlans
+            .AnyAsync(mp => mp.Id == mealPlanId && mp.UserId == userId);
+        if (!mealPlanExists)
+        {
+            return null;
+        }
+
+        var recipeAccess = await _dbContext.Recipes
+            .Where(recipe => recipe.Id == meal.RecipeId)
+            .Select(recipe => new
+            {
+                recipe.Id,
+                recipe.OwnerId,
+                recipe.ApprovalStatus
+            })
+            .FirstOrDefaultAsync();
+        if (recipeAccess is null)
+        {
+            return null;
+        }
+
+        var canUseRecipe = isAdmin
+            || recipeAccess.ApprovalStatus == ApprovalStatus.Approved
+            || recipeAccess.OwnerId == userId;
+        if (!canUseRecipe)
+        {
+            return null;
+        }
+
         meal.MealPlanId = mealPlanId;
+        meal.RecipeId = recipeAccess.Id;
         meal.CreatedAt = DateTime.UtcNow;
         if (meal.PortionMultiplier <= 0)
         {
             meal.PortionMultiplier = 1.0;
+        }
+        else
+        {
+            meal.PortionMultiplier = Math.Clamp(meal.PortionMultiplier, 0.5, 3.0);
         }
 
         _dbContext.Meals.Add(meal);
@@ -174,7 +225,7 @@ public class MealPlanService : IMealPlanService
 
     public async Task<WeeklyMealPlanResult> GetWeeklyPlan(int userId, DateTime? weekStart = null)
     {
-        var startDate = weekStart?.Date ?? GetWeekStart(DateTime.UtcNow.Date);
+        var startDate = weekStart?.Date ?? WeekDateHelper.GetCurrentWeekStart();
         var endDate = startDate.AddDays(7);
 
         var mealPlans = await _dbContext.MealPlans
@@ -267,7 +318,7 @@ public class MealPlanService : IMealPlanService
 
         var requiredRecipeIds = presetPlan.Meals.Select(meal => meal.RecipeId).Distinct().ToList();
         var availableRecipeIds = await _dbContext.Recipes
-            .Where(recipe => requiredRecipeIds.Contains(recipe.Id))
+            .Where(recipe => requiredRecipeIds.Contains(recipe.Id) && recipe.ApprovalStatus == ApprovalStatus.Approved)
             .Select(recipe => recipe.Id)
             .ToListAsync();
 
@@ -355,14 +406,8 @@ public class MealPlanService : IMealPlanService
             .ToList();
 
         return await _dbContext.Recipes
-            .Where(recipe => recipeIds.Contains(recipe.Id))
+            .Where(recipe => recipeIds.Contains(recipe.Id) && recipe.ApprovalStatus == ApprovalStatus.Approved)
             .ToDictionaryAsync(recipe => recipe.Id);
-    }
-
-    private static DateTime GetWeekStart(DateTime date)
-    {
-        var diff = (7 + (date.DayOfWeek - DayOfWeek.Monday)) % 7;
-        return date.AddDays(-diff);
     }
 
     private sealed record PresetMealPlanDefinition(

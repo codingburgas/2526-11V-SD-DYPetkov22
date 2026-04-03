@@ -241,10 +241,90 @@ namespace MealPlannerApp.Migrations
                     b.ToTable("MealPlans");
                 });
 
+            modelBuilder.Entity("MealPlannerApp.Models.MealPlanTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("WeekStart")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("MealPlanTemplates");
+                });
+
+            modelBuilder.Entity("MealPlannerApp.Models.MealPlanTemplateMeal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DayOffset")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MealPlanTemplateId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MealType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("PortionMultiplier")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MealPlanTemplateId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("MealPlanTemplateMeals");
+                });
+
             modelBuilder.Entity("MealPlannerApp.Models.Recipe", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ApprovalStatus")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Calories")
@@ -269,7 +349,22 @@ namespace MealPlannerApp.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Recipes");
 
@@ -277,90 +372,106 @@ namespace MealPlannerApp.Migrations
                         new
                         {
                             Id = 1,
+                            ApprovalStatus = 2,
                             Calories = 520,
                             CookingTime = 35,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A classic high-protein plate with grilled chicken, rice, and broccoli.",
-                            Instructions = "1. Cook the rice until fluffy and set it aside.\n2. Heat a pan, add the chicken breast, and cook until golden on both sides and fully cooked through.\n3. Steam or saute the broccoli until just tender.\n4. Slice the chicken and plate it with the rice and broccoli.\n5. Serve everything warm.",
+                            Instructions = "1. Cook the rice until fluffy and set it aside.\n2. Heat a pan, add the chicken breast, and cook until golden on both sides and fully cooked through.\r\n3. Steam or saute the broccoli until just tender.\r\n4. Slice the chicken and plate it with the rice and broccoli.\r\n5. Serve everything warm.",
                             IsVegetarian = false,
-                            Name = "Grilled Chicken and Rice"
+                            Name = "Grilled Chicken and Rice",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 2,
+                            ApprovalStatus = 2,
                             Calories = 390,
                             CookingTime = 20,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A fast vegetarian bowl with rice, broccoli, and melted cheddar.",
-                            Instructions = "1. Cook the rice and keep it warm.\n2. Steam the broccoli until bright green and tender.\n3. Put the rice into a bowl and top it with the broccoli.\n4. Sprinkle cheddar cheese over the hot bowl so it softens slightly.\n5. Serve immediately.",
+                            Instructions = "1. Cook the rice and keep it warm.\r\n2. Steam the broccoli until bright green and tender.\r\n3. Put the rice into a bowl and top it with the broccoli.\r\n4. Sprinkle cheddar cheese over the hot bowl so it softens slightly.\r\n5. Serve immediately.",
                             IsVegetarian = true,
-                            Name = "Broccoli Rice Bowl"
+                            Name = "Broccoli Rice Bowl",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 3,
+                            ApprovalStatus = 2,
                             Calories = 410,
                             CookingTime = 15,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A quick savory breakfast with eggs, spinach, cheese, and onion.",
-                            Instructions = "1. Heat olive oil in a non-stick pan and soften the onion for a few minutes.\n2. Add the spinach and cook until wilted.\n3. Beat the eggs, pour them into the pan, and let them begin to set.\n4. Sprinkle cheddar over the top and fold the omelette in half.\n5. Cook for another minute, then slide onto a plate and serve.",
+                            Instructions = "1. Heat olive oil in a non-stick pan and soften the onion for a few minutes.\r\n2. Add the spinach and cook until wilted.\r\n3. Beat the eggs, pour them into the pan, and let them begin to set.\r\n4. Sprinkle cheddar over the top and fold the omelette in half.\r\n5. Cook for another minute, then slide onto a plate and serve.",
                             IsVegetarian = true,
-                            Name = "Spinach Omelette"
+                            Name = "Spinach Omelette",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 4,
+                            ApprovalStatus = 2,
                             Calories = 360,
                             CookingTime = 5,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A no-cook breakfast bowl with oats, yogurt, and banana.",
-                            Instructions = "1. Spoon the Greek yogurt into a bowl.\n2. Stir in the rolled oats so they soften slightly.\n3. Slice the banana and place it on top.\n4. Let the bowl rest for a couple of minutes before serving.",
+                            Instructions = "1. Spoon the Greek yogurt into a bowl.\r\n2. Stir in the rolled oats so they soften slightly.\r\n3. Slice the banana and place it on top.\r\n4. Let the bowl rest for a couple of minutes before serving.",
                             IsVegetarian = true,
-                            Name = "Greek Yogurt Banana Oats"
+                            Name = "Greek Yogurt Banana Oats",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 5,
+                            ApprovalStatus = 2,
                             Calories = 610,
                             CookingTime = 40,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "An easy oven meal with salmon, sweet potato, broccoli, and garlic.",
-                            Instructions = "1. Cut the sweet potato into cubes and place it on a baking tray with olive oil and garlic.\n2. Roast the sweet potato until it starts to soften.\n3. Add the salmon and broccoli to the tray.\n4. Bake until the salmon flakes easily and the broccoli is tender.\n5. Serve straight from the tray while hot.",
+                            Instructions = "1. Cut the sweet potato into cubes and place it on a baking tray with olive oil and garlic.\r\n2. Roast the sweet potato until it starts to soften.\r\n3. Add the salmon and broccoli to the tray.\r\n4. Bake until the salmon flakes easily and the broccoli is tender.\r\n5. Serve straight from the tray while hot.",
                             IsVegetarian = false,
-                            Name = "Salmon and Sweet Potato Tray Bake"
+                            Name = "Salmon and Sweet Potato Tray Bake",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 6,
+                            ApprovalStatus = 2,
                             Calories = 560,
                             CookingTime = 25,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A hearty vegetarian pasta with chickpeas, tomatoes, spinach, and parmesan.",
-                            Instructions = "1. Cook the pasta until al dente and reserve a little cooking water.\n2. In a pan, warm olive oil and garlic, then add the cherry tomatoes.\n3. Stir in the chickpeas and cook until heated through.\n4. Add spinach and cook until wilted, then fold in the pasta.\n5. Finish with parmesan and a splash of pasta water if needed before serving.",
+                            Instructions = "1. Cook the pasta until al dente and reserve a little cooking water.\r\n2. In a pan, warm olive oil and garlic, then add the cherry tomatoes.\r\n3. Stir in the chickpeas and cook until heated through.\r\n4. Add spinach and cook until wilted, then fold in the pasta.\r\n5. Finish with parmesan and a splash of pasta water if needed before serving.",
                             IsVegetarian = true,
-                            Name = "Chickpea Tomato Pasta"
+                            Name = "Chickpea Tomato Pasta",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 7,
+                            ApprovalStatus = 2,
                             Calories = 545,
                             CookingTime = 30,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A one-pan chicken and rice meal with peppers, onion, and garlic.",
-                            Instructions = "1. Cook the rice first and set it aside.\n2. Saute onion, bell pepper, and garlic in olive oil until softened.\n3. Add the chicken pieces and cook until lightly browned and cooked through.\n4. Stir the rice into the pan and mix everything together until hot.\n5. Serve the skillet meal straight away.",
+                            Instructions = "1. Cook the rice first and set it aside.\r\n2. Saute onion, bell pepper, and garlic in olive oil until softened.\r\n3. Add the chicken pieces and cook until lightly browned and cooked through.\r\n4. Stir the rice into the pan and mix everything together until hot.\r\n5. Serve the skillet meal straight away.",
                             IsVegetarian = false,
-                            Name = "Chicken Pepper Rice Skillet"
+                            Name = "Chicken Pepper Rice Skillet",
+                            OwnerId = 1
                         },
                         new
                         {
                             Id = 8,
+                            ApprovalStatus = 2,
                             Calories = 430,
                             CookingTime = 10,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "A fresh no-cook salad with chickpeas, cucumber, tomatoes, and avocado.",
-                            Instructions = "1. Drain the chickpeas and add them to a large bowl.\n2. Dice the cucumber, halve the cherry tomatoes, and cube the avocado.\n3. Add everything to the bowl with olive oil.\n4. Toss gently so the avocado stays mostly intact.\n5. Serve chilled or at room temperature.",
+                            Instructions = "1. Drain the chickpeas and add them to a large bowl.\r\n2. Dice the cucumber, halve the cherry tomatoes, and cube the avocado.\r\n3. Add everything to the bowl with olive oil.\r\n4. Toss gently so the avocado stays mostly intact.\r\n5. Serve chilled or at room temperature.",
                             IsVegetarian = true,
-                            Name = "Mediterranean Chickpea Salad"
+                            Name = "Mediterranean Chickpea Salad",
+                            OwnerId = 1
                         });
                 });
 
@@ -696,33 +807,217 @@ namespace MealPlannerApp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("Role")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
+                    b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Username");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("Users", (string)null);
 
                     b.HasData(
                         new
                         {
                             Id = 1,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "c3e1c75f-159f-4e2d-a2eb-8b67800fc86f",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@mealplanner.local",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            NormalizedEmail = "ADMIN@MEALPLANNER.LOCAL",
+                            NormalizedUserName = "ADMIN",
+                            PhoneNumberConfirmed = false,
                             Role = 0,
-                            Username = "admin"
+                            SecurityStamp = "d6420f08-9b3e-4c53-bf64-cf9afc6ec3d8",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
                         });
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("MealPlannerApp.Models.Meal", b =>
@@ -755,6 +1050,47 @@ namespace MealPlannerApp.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MealPlannerApp.Models.MealPlanTemplate", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.User", "Owner")
+                        .WithMany("MealPlanTemplates")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("MealPlannerApp.Models.MealPlanTemplateMeal", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.MealPlanTemplate", "MealPlanTemplate")
+                        .WithMany("Meals")
+                        .HasForeignKey("MealPlanTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MealPlannerApp.Models.Recipe", "Recipe")
+                        .WithMany("MealPlanTemplateMeals")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MealPlanTemplate");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("MealPlannerApp.Models.Recipe", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.User", "Owner")
+                        .WithMany("Recipes")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("MealPlannerApp.Models.RecipeIngredient", b =>
                 {
                     b.HasOne("MealPlannerApp.Models.Ingredient", "Ingredient")
@@ -774,6 +1110,57 @@ namespace MealPlannerApp.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MealPlannerApp.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
+                {
+                    b.HasOne("MealPlannerApp.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MealPlannerApp.Models.Ingredient", b =>
                 {
                     b.Navigation("RecipeIngredients");
@@ -784,8 +1171,15 @@ namespace MealPlannerApp.Migrations
                     b.Navigation("Meals");
                 });
 
+            modelBuilder.Entity("MealPlannerApp.Models.MealPlanTemplate", b =>
+                {
+                    b.Navigation("Meals");
+                });
+
             modelBuilder.Entity("MealPlannerApp.Models.Recipe", b =>
                 {
+                    b.Navigation("MealPlanTemplateMeals");
+
                     b.Navigation("Meals");
 
                     b.Navigation("RecipeIngredients");
@@ -793,7 +1187,11 @@ namespace MealPlannerApp.Migrations
 
             modelBuilder.Entity("MealPlannerApp.Models.User", b =>
                 {
+                    b.Navigation("MealPlanTemplates");
+
                     b.Navigation("MealPlans");
+
+                    b.Navigation("Recipes");
                 });
 #pragma warning restore 612, 618
         }

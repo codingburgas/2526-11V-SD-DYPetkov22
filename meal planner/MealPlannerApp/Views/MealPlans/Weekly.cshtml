@@ -8,13 +8,11 @@
         <h1 class="h3 mb-1">Weekly Meal Planner</h1>
         <p class="text-muted mb-0">@Model.WeekStart:dd MMM yyyy - @Model.WeekEnd:dd MMM yyyy</p>
     </div>
-    <a asp-action="AddMeal" asp-route-userId="@Model.UserId" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-primary">Add Meal</a>
+    <div class="d-flex gap-2">
+        <a asp-action="AddMeal" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-primary">Add Meal</a>
+        <a asp-controller="MealPlanTemplates" asp-action="CreateFromWeek" asp-route-weekStart="@Model.WeekStart.ToString("yyyy-MM-dd")" class="btn btn-outline-primary">Turn Week Into Template</a>
+    </div>
 </div>
-
-@if (TempData["SuccessMessage"] is string successMessage)
-{
-    <div class="alert alert-success" role="alert">@successMessage</div>
-}
 
 @if (!ViewData.ModelState.IsValid)
 {
@@ -36,7 +34,6 @@
                 @if (Model.PresetPlans.Any())
                 {
                     <form asp-action="StartPreset" method="post">
-                        <input asp-for="StartPresetPlan.UserId" type="hidden" />
                         <input asp-for="StartPresetPlan.WeekStart" type="hidden" />
 
                         <div class="row g-3 mb-3">
@@ -71,7 +68,7 @@
                                 <span asp-validation-for="StartPresetPlan.BodyWeightKg" class="text-danger"></span>
                             </div>
                             <div class="col-md-8">
-                                <div class="small text-muted mb-2">This replaces the selected week for the chosen user with the starter plan meals and scaled portions.</div>
+                                <div class="small text-muted mb-2">This replaces the selected week in your account with the starter plan meals and scaled portions.</div>
                                 <button type="submit" class="btn btn-success">Start Selected Plan</button>
                             </div>
                         </div>
@@ -90,11 +87,7 @@
             <div class="card-body">
                 <h2 class="h5 mb-3">Load a Week</h2>
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
-                        <label class="form-label">User ID</label>
-                        <input type="number" name="userId" value="@Model.UserId" class="form-control" min="1" />
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label class="form-label">Week Start</label>
                         <input type="date" name="weekStart" value="@Model.WeekStart.ToString("yyyy-MM-dd")" class="form-control" />
                     </div>

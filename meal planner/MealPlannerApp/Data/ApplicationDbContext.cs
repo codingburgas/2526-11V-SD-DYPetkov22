@@ -1,30 +1,57 @@
 using MealPlannerApp.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users => Set<User>();
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
     public DbSet<MealPlan> MealPlans => Set<MealPlan>();
     public DbSet<Meal> Meals => Set<Meal>();
+    public DbSet<MealPlanTemplate> MealPlanTemplates => Set<MealPlanTemplate>();
+    public DbSet<MealPlanTemplateMeal> MealPlanTemplateMeals => Set<MealPlanTemplateMeal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<User>()
+            .ToTable("Users");
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.UserName)
+            .HasColumnName("Username")
+            .IsRequired();
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.Email)
+            .IsRequired();
+
+        modelBuilder.Entity<User>()
             .HasMany(u => u.MealPlans)
             .WithOne(mp => mp.User)
             .HasForeignKey(mp => mp.UserId);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Recipes)
+            .WithOne(r => r.Owner)
+            .HasForeignKey(r => r.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.MealPlanTemplates)
+            .WithOne(t => t.Owner)
+            .HasForeignKey(t => t.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<MealPlan>()
             .HasMany(mp => mp.Meals)
@@ -54,6 +81,17 @@ public class ApplicationDbContext : DbContext
             .HasIndex(ri => new { ri.RecipeId, ri.IngredientId })
             .IsUnique();
 
+        modelBuilder.Entity<MealPlanTemplate>()
+            .HasMany(t => t.Meals)
+            .WithOne(m => m.MealPlanTemplate)
+            .HasForeignKey(m => m.MealPlanTemplateId);
+
+        modelBuilder.Entity<MealPlanTemplateMeal>()
+            .HasOne(m => m.Recipe)
+            .WithMany(r => r.MealPlanTemplateMeals)
+            .HasForeignKey(m => m.RecipeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         var seedCreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         modelBuilder.Entity<User>().HasData(
@@ -61,8 +99,14 @@ public class ApplicationDbContext : DbContext
             {
                 Id = 1,
                 CreatedAt = seedCreatedAt,
-                Username = "admin",
+                UserName = "admin",
+                NormalizedUserName = "ADMIN",
                 Email = "admin@mealplanner.local",
+                NormalizedEmail = "ADMIN@MEALPLANNER.LOCAL",
+                EmailConfirmed = true,
+                LockoutEnabled = true,
+                SecurityStamp = "d6420f08-9b3e-4c53-bf64-cf9afc6ec3d8",
+                ConcurrencyStamp = "c3e1c75f-159f-4e2d-a2eb-8b67800fc86f",
                 Role = UserRole.Admin
             });
 
@@ -105,7 +149,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 35,
                 Calories = 520,
-                IsVegetarian = false
+                IsVegetarian = false,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -122,7 +168,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 20,
                 Calories = 390,
-                IsVegetarian = true
+                IsVegetarian = true,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -139,7 +187,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 15,
                 Calories = 410,
-                IsVegetarian = true
+                IsVegetarian = true,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -155,7 +205,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 5,
                 Calories = 360,
-                IsVegetarian = true
+                IsVegetarian = true,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -172,7 +224,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 40,
                 Calories = 610,
-                IsVegetarian = false
+                IsVegetarian = false,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -189,7 +243,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 25,
                 Calories = 560,
-                IsVegetarian = true
+                IsVegetarian = true,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -206,7 +262,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 30,
                 Calories = 545,
-                IsVegetarian = false
+                IsVegetarian = false,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             },
             new Recipe
             {
@@ -223,7 +281,9 @@ public class ApplicationDbContext : DbContext
 """,
                 CookingTime = 10,
                 Calories = 430,
-                IsVegetarian = true
+                IsVegetarian = true,
+                OwnerId = 1,
+                ApprovalStatus = ApprovalStatus.Approved
             });
 
         modelBuilder.Entity<RecipeIngredient>().HasData(

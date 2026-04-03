@@ -1,0 +1,56 @@
+@model IEnumerable<MealPlannerApp.Dtos.Recipes.RecipeDto>
+@{
+    ViewData["Title"] = "Recipe Moderation";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-0">Recipe Moderation</h1>
+        <p class="text-muted mb-0">Approve submissions to make them public, or reject them with feedback for the owner.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back To Recipes</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-light border">There are no recipes waiting for review.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var recipe in Model)
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h2 class="h5 mb-1">@recipe.Name</h2>
+                                <div class="text-muted small">By @recipe.OwnerUserName, @recipe.CookingTime min, @recipe.Calories kcal</div>
+                            </div>
+                            <span class="badge text-bg-warning">@recipe.ApprovalStatus</span>
+                        </div>
+                        <p class="mb-3">@recipe.Description</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-info">Open Details</a>
+                            <form asp-action="Approve" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@recipe.Id" />
+                                <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                            </form>
+                        </div>
+                        <form asp-action="Reject" method="post" class="row g-2 align-items-end">
+                            <input type="hidden" name="Id" value="@recipe.Id" />
+                            <div class="col-md-9">
+                                <label class="form-label">Feedback</label>
+                                <textarea name="ReviewNotes" class="form-control" rows="2" placeholder="Explain what needs to change"></textarea>
+                            </div>
+                            <div class="col-md-3 d-grid">
+                                <button type="submit" class="btn btn-outline-danger">Reject</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
