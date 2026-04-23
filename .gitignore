@@ -1,0 +1,21 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# IDE and editor state
+.idea/
+.vs/
+*.DotSettings.user
+
+# Local database files
+*.db
+*.db-shm
+*.db-wal
+
+# Local run logs
+run*.out
+run*.err
+
+# OS files
+.DS_Store
+Thumbs.db
