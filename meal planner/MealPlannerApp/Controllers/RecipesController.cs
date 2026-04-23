@@ -9,15 +9,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MealPlannerApp.Controllers;
 
+/// <summary>
+/// Handles recipe browsing, ownership, and moderation.
+/// </summary>
 public class RecipesController : Controller
 {
     private readonly IRecipeService _recipeService;
 
+    /// <summary>
+    /// Receives the recipe service.
+    /// </summary>
     public RecipesController(IRecipeService recipeService)
     {
         _recipeService = recipeService;
     }
 
+    /// <summary>
+    /// Lists visible recipes with optional filters.
+    /// </summary>
     public async Task<IActionResult> Index(string? ingredientName, bool vegetarianOnly = false, bool highProteinOnly = false)
     {
         var recipes = await _recipeService.GetAllRecipes(
@@ -34,6 +43,9 @@ public class RecipesController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// Shows one visible recipe.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var recipe = await _recipeService.GetRecipeById(id, GetCurrentUserId(), IsAdmin());
@@ -45,12 +57,18 @@ public class RecipesController : Controller
         return View(MapToDto(recipe));
     }
 
+    /// <summary>
+    /// Shows the recipe create form.
+    /// </summary>
     [Authorize]
     public IActionResult Create()
     {
         return View(new RecipeDto());
     }
 
+    /// <summary>
+    /// Creates a private or submitted recipe.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -68,6 +86,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the recipe edit form.
+    /// </summary>
     [Authorize]
     public async Task<IActionResult> Edit(int id)
     {
@@ -91,6 +112,9 @@ public class RecipesController : Controller
         return View(MapToDto(recipe));
     }
 
+    /// <summary>
+    /// Saves recipe edits.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -118,6 +142,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    /// <summary>
+    /// Shows the recipe delete confirmation.
+    /// </summary>
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
@@ -135,6 +162,9 @@ public class RecipesController : Controller
         return View(MapToDto(recipe));
     }
 
+    /// <summary>
+    /// Deletes a recipe when allowed and unused.
+    /// </summary>
     [Authorize]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
@@ -161,6 +191,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Sends a recipe to admin review.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -176,6 +209,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    /// <summary>
+    /// Lists recipes waiting for admin review.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Moderation()
     {
@@ -183,6 +219,9 @@ public class RecipesController : Controller
         return View(recipes.Select(MapToDto).ToList());
     }
 
+    /// <summary>
+    /// Approves a submitted recipe.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -198,6 +237,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Moderation));
     }
 
+    /// <summary>
+    /// Rejects a submitted recipe with notes.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -213,6 +255,9 @@ public class RecipesController : Controller
         return RedirectToAction(nameof(Moderation));
     }
 
+    /// <summary>
+    /// Reads the current user id when signed in.
+    /// </summary>
     private int? GetCurrentUserId()
     {
         return User.Identity?.IsAuthenticated == true
@@ -220,16 +265,25 @@ public class RecipesController : Controller
             : null;
     }
 
+    /// <summary>
+    /// Checks whether the current user is an admin.
+    /// </summary>
     private bool IsAdmin()
     {
         return User.IsInRole(ApplicationRoles.Admin);
     }
 
+    /// <summary>
+    /// Checks edit/delete permission for a recipe.
+    /// </summary>
     private bool CanManage(Recipe recipe)
     {
         return IsAdmin() || recipe.OwnerId == GetCurrentUserId();
     }
 
+    /// <summary>
+    /// Converts a recipe entity to a page DTO.
+    /// </summary>
     private static RecipeDto MapToDto(Recipe recipe)
     {
         return new RecipeDto
@@ -256,6 +310,9 @@ public class RecipesController : Controller
         };
     }
 
+    /// <summary>
+    /// Converts a recipe DTO to an entity.
+    /// </summary>
     private static Recipe MapToEntity(RecipeDto dto)
     {
         return new Recipe

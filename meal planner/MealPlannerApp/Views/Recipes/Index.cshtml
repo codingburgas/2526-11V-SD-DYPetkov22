@@ -1,4 +1,5 @@
 @model IEnumerable<MealPlannerApp.Dtos.Recipes.RecipeDto>
+@* Lists visible recipes with filters. *@
 @{
     ViewData["Title"] = "Recipes";
     var currentUserId = User.Identity?.IsAuthenticated == true ? User.GetRequiredUserId() : -1;

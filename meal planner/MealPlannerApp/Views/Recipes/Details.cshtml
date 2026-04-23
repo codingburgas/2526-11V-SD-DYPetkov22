@@ -1,4 +1,5 @@
 @model MealPlannerApp.Dtos.Recipes.RecipeDto
+@* Shows one recipe with ingredients and review state. *@
 @{
     ViewData["Title"] = "Recipe Details";
     var isOwner = User.Identity?.IsAuthenticated == true && Model.OwnerId == User.GetRequiredUserId();

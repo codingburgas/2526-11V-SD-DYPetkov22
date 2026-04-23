@@ -9,21 +9,33 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MealPlannerApp.Controllers;
 
+/// <summary>
+/// Handles shared weekly meal plan templates.
+/// </summary>
 public class MealPlanTemplatesController : Controller
 {
     private readonly IMealPlanTemplateService _mealPlanTemplateService;
 
+    /// <summary>
+    /// Receives the template service.
+    /// </summary>
     public MealPlanTemplatesController(IMealPlanTemplateService mealPlanTemplateService)
     {
         _mealPlanTemplateService = mealPlanTemplateService;
     }
 
+    /// <summary>
+    /// Lists visible templates.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var templates = await _mealPlanTemplateService.GetVisibleTemplates(GetCurrentUserId(), IsAdmin());
         return View(templates.Select(MapToDto).ToList());
     }
 
+    /// <summary>
+    /// Shows one visible template.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var template = await _mealPlanTemplateService.GetTemplateById(id, GetCurrentUserId(), IsAdmin());
@@ -35,6 +47,9 @@ public class MealPlanTemplatesController : Controller
         return View(MapToDto(template));
     }
 
+    /// <summary>
+    /// Shows the form to save the current week.
+    /// </summary>
     [Authorize]
     public IActionResult CreateFromWeek(DateTime? weekStart = null)
     {
@@ -48,6 +63,9 @@ public class MealPlanTemplatesController : Controller
         });
     }
 
+    /// <summary>
+    /// Saves the current week as a template.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -79,6 +97,9 @@ public class MealPlanTemplatesController : Controller
         }
     }
 
+    /// <summary>
+    /// Sends a template to admin review.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -94,6 +115,9 @@ public class MealPlanTemplatesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    /// <summary>
+    /// Applies a template to the selected week.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -126,6 +150,9 @@ public class MealPlanTemplatesController : Controller
         return RedirectToAction("Weekly", "MealPlans", new { weekStart = targetWeek.ToString("yyyy-MM-dd") });
     }
 
+    /// <summary>
+    /// Lists templates waiting for admin review.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Moderation()
     {
@@ -133,6 +160,9 @@ public class MealPlanTemplatesController : Controller
         return View(templates.Select(MapToDto).ToList());
     }
 
+    /// <summary>
+    /// Approves a submitted template.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -149,6 +179,9 @@ public class MealPlanTemplatesController : Controller
         return RedirectToAction(nameof(Moderation));
     }
 
+    /// <summary>
+    /// Rejects a submitted template with notes.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -164,6 +197,9 @@ public class MealPlanTemplatesController : Controller
         return RedirectToAction(nameof(Moderation));
     }
 
+    /// <summary>
+    /// Reads the current user id when signed in.
+    /// </summary>
     private int? GetCurrentUserId()
     {
         return User.Identity?.IsAuthenticated == true
@@ -171,11 +207,17 @@ public class MealPlanTemplatesController : Controller
             : null;
     }
 
+    /// <summary>
+    /// Checks whether the current user is an admin.
+    /// </summary>
     private bool IsAdmin()
     {
         return User.IsInRole(ApplicationRoles.Admin);
     }
 
+    /// <summary>
+    /// Builds a weekly template DTO for display.
+    /// </summary>
     private static MealPlanTemplateDto MapToDto(MealPlanTemplate template)
     {
         var days = Enumerable.Range(0, 7)

@@ -8,15 +8,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MealPlannerApp.Controllers;
 
+/// <summary>
+/// Handles ingredient list, details, and admin editing.
+/// </summary>
 public class IngredientsController : Controller
 {
     private readonly IIngredientService _ingredientService;
 
+    /// <summary>
+    /// Receives the ingredient service.
+    /// </summary>
     public IngredientsController(IIngredientService ingredientService)
     {
         _ingredientService = ingredientService;
     }
 
+    /// <summary>
+    /// Lists all ingredients.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var ingredients = await _ingredientService.GetAllIngredients();
@@ -24,6 +33,9 @@ public class IngredientsController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// Shows one ingredient.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var ingredient = await _ingredientService.GetIngredientById(id);
@@ -35,12 +47,18 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    /// <summary>
+    /// Shows the admin create form.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     public IActionResult Create()
     {
         return View(new IngredientDto());
     }
 
+    /// <summary>
+    /// Saves a new ingredient.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -55,6 +73,9 @@ public class IngredientsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the admin edit form.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Edit(int id)
     {
@@ -67,6 +88,9 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    /// <summary>
+    /// Updates an existing ingredient.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -91,6 +115,9 @@ public class IngredientsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the admin delete confirmation.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     public async Task<IActionResult> Delete(int id)
     {
@@ -103,6 +130,9 @@ public class IngredientsController : Controller
         return View(MapToDto(ingredient));
     }
 
+    /// <summary>
+    /// Deletes an ingredient when it is unused.
+    /// </summary>
     [Authorize(Roles = ApplicationRoles.Admin)]
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
@@ -123,6 +153,9 @@ public class IngredientsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Converts an entity to a form DTO.
+    /// </summary>
     private static IngredientDto MapToDto(Ingredient ingredient)
     {
         return new IngredientDto
@@ -136,6 +169,9 @@ public class IngredientsController : Controller
         };
     }
 
+    /// <summary>
+    /// Converts a form DTO to an entity.
+    /// </summary>
     private static Ingredient MapToEntity(IngredientDto dto)
     {
         return new Ingredient

@@ -11,12 +11,18 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace MealPlannerApp.Controllers;
 
 [Authorize]
+/// <summary>
+/// Handles private meal plans and the weekly planner.
+/// </summary>
 public class MealPlansController : Controller
 {
     private readonly IMealPlanService _mealPlanService;
     private readonly IRecipeService _recipeService;
     private readonly IIngredientService _ingredientService;
 
+    /// <summary>
+    /// Receives planner, recipe, and ingredient services.
+    /// </summary>
     public MealPlansController(IMealPlanService mealPlanService, IRecipeService recipeService, IIngredientService ingredientService)
     {
         _mealPlanService = mealPlanService;
@@ -24,6 +30,9 @@ public class MealPlansController : Controller
         _ingredientService = ingredientService;
     }
 
+    /// <summary>
+    /// Lists the user's meal plan days.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var mealPlans = await _mealPlanService.GetAllMealPlans(User.GetRequiredUserId());
@@ -31,6 +40,9 @@ public class MealPlansController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// Shows one meal plan day.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
@@ -42,11 +54,17 @@ public class MealPlansController : Controller
         return View(MapToDto(mealPlan));
     }
 
+    /// <summary>
+    /// Shows the create day form.
+    /// </summary>
     public IActionResult Create()
     {
         return View(new MealPlanDto { Date = DateTime.Today });
     }
 
+    /// <summary>
+    /// Creates a meal plan day.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MealPlanDto dto)
@@ -60,6 +78,9 @@ public class MealPlansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the edit day form.
+    /// </summary>
     public async Task<IActionResult> Edit(int id)
     {
         var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
@@ -71,6 +92,9 @@ public class MealPlansController : Controller
         return View(MapToDto(mealPlan));
     }
 
+    /// <summary>
+    /// Updates a meal plan day.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, MealPlanDto dto)
@@ -94,6 +118,9 @@ public class MealPlansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the delete day confirmation.
+    /// </summary>
     public async Task<IActionResult> Delete(int id)
     {
         var mealPlan = await _mealPlanService.GetMealPlanById(id, User.GetRequiredUserId());
@@ -105,6 +132,9 @@ public class MealPlansController : Controller
         return View(MapToDto(mealPlan));
     }
 
+    /// <summary>
+    /// Deletes a meal plan day.
+    /// </summary>
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
@@ -118,12 +148,18 @@ public class MealPlansController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Shows the weekly planner dashboard.
+    /// </summary>
     public async Task<IActionResult> Weekly(DateTime? weekStart = null, DateTime? selectedDate = null)
     {
         var model = await BuildWeeklyPlannerModel(weekStart, selectedDate);
         return View(model);
     }
 
+    /// <summary>
+    /// Shows recent weekly nutrition progress.
+    /// </summary>
     public async Task<IActionResult> History()
     {
         var history = await _mealPlanService.GetWeeklyHistory(User.GetRequiredUserId());
@@ -163,6 +199,9 @@ public class MealPlansController : Controller
         });
     }
 
+    /// <summary>
+    /// Starts a predefined weekly meal plan.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> StartPreset([Bind(Prefix = "StartPresetPlan")] StartPresetMealPlanDto dto, DateTime? selectedDate = null)
@@ -198,6 +237,9 @@ public class MealPlansController : Controller
         });
     }
 
+    /// <summary>
+    /// Generates a personalized weekly plan.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Generate([Bind(Prefix = "GeneratePlan")] GeneratePersonalizedMealPlanDto dto, DateTime? selectedDate = null)
@@ -254,6 +296,9 @@ public class MealPlansController : Controller
         });
     }
 
+    /// <summary>
+    /// Replaces one planned meal with a matching recipe.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SwapMeal(int mealId, DateTime weekStart, DateTime? selectedDate = null)
@@ -280,6 +325,9 @@ public class MealPlansController : Controller
         });
     }
 
+    /// <summary>
+    /// Shows the form for adding a meal to a week.
+    /// </summary>
     public async Task<IActionResult> AddMeal(DateTime? weekStart = null)
     {
         var userId = User.GetRequiredUserId();
@@ -303,6 +351,9 @@ public class MealPlansController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Adds a meal to one day of the selected week.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMeal(AddMealDto dto)
@@ -329,6 +380,9 @@ public class MealPlansController : Controller
         return RedirectToAction(nameof(Weekly), new { weekStart = dto.WeekStart.ToString("yyyy-MM-dd") });
     }
 
+    /// <summary>
+    /// Loads day and recipe choices for the add-meal form.
+    /// </summary>
     private async Task PopulateAddMealLookups(DateTime weekStart)
     {
         var weeklyPlan = await _mealPlanService.GetWeeklyPlan(User.GetRequiredUserId(), weekStart);
@@ -379,6 +433,9 @@ public class MealPlansController : Controller
             .ToList();
     }
 
+    /// <summary>
+    /// Builds all data needed by the weekly dashboard.
+    /// </summary>
     private async Task<WeeklyMealPlannerDto> BuildWeeklyPlannerModel(
         DateTime? weekStart,
         DateTime? selectedDate,
@@ -442,6 +499,9 @@ public class MealPlansController : Controller
             ResolveSelectedDate(result, selectedDate));
     }
 
+    /// <summary>
+    /// Converts weekly service results into the dashboard DTO.
+    /// </summary>
     private static WeeklyMealPlannerDto BuildWeeklyPlannerDto(
         WeeklyMealPlanResult result,
         IReadOnlyCollection<PlannerIngredientOptionDto> ingredientOptions,
@@ -519,6 +579,9 @@ public class MealPlansController : Controller
         };
     }
 
+    /// <summary>
+    /// Picks the selected day shown in the dashboard.
+    /// </summary>
     private static DateTime ResolveSelectedDate(WeeklyMealPlanResult result, DateTime? selectedDate)
     {
         if (selectedDate.HasValue)
@@ -543,6 +606,9 @@ public class MealPlansController : Controller
             : firstDayWithMeals;
     }
 
+    /// <summary>
+    /// Keeps the selected day inside the current week.
+    /// </summary>
     private static DateTime NormalizeSelectedDate(DateTime? selectedDate, DateTime weekStart)
     {
         var normalizedWeekStart = WeekDateHelper.GetWeekStart(weekStart);
@@ -562,6 +628,9 @@ public class MealPlansController : Controller
         return normalizedSelectedDate;
     }
 
+    /// <summary>
+    /// Converts a meal entity to a weekly meal DTO.
+    /// </summary>
     private static WeeklyMealItemDto MapWeeklyMeal(Meal meal)
     {
         return new WeeklyMealItemDto
@@ -576,6 +645,9 @@ public class MealPlansController : Controller
         };
     }
 
+    /// <summary>
+    /// Converts a meal plan entity to a page DTO.
+    /// </summary>
     private static MealPlanDto MapToDto(MealPlan mealPlan)
     {
         var mealItems = mealPlan.Meals
@@ -629,6 +701,9 @@ public class MealPlansController : Controller
         };
     }
 
+    /// <summary>
+    /// Converts a page DTO to a meal plan entity.
+    /// </summary>
     private static MealPlan MapToEntity(MealPlanDto dto)
     {
         return new MealPlan
@@ -638,6 +713,9 @@ public class MealPlansController : Controller
         };
     }
 
+    /// <summary>
+    /// Builds default generator values from saved preferences.
+    /// </summary>
     private static GeneratePersonalizedMealPlanDto BuildDefaultGeneratePlan(PlannerPreferencesResult preferences, DateTime weekStart)
     {
         return new GeneratePersonalizedMealPlanDto
@@ -654,6 +732,9 @@ public class MealPlansController : Controller
         };
     }
 
+    /// <summary>
+    /// Splits user-entered excluded foods.
+    /// </summary>
     private static IReadOnlyCollection<string> ParseExcludedFoods(string? excludedFoods)
     {
         return (excludedFoods ?? string.Empty)
@@ -662,6 +743,9 @@ public class MealPlansController : Controller
             .ToArray();
     }
 
+    /// <summary>
+    /// Converts service nutrition totals to a DTO.
+    /// </summary>
     private static NutritionSummaryDto MapNutrition(NutritionSummaryResult nutrition)
     {
         return new NutritionSummaryDto

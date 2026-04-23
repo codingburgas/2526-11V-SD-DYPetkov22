@@ -1,78 +1,173 @@
 @{
+    // Builds layout-level values used by the shell and navigation.
     var useWideLayout = ViewData["UseWideLayout"] as bool? == true;
-    var bodyClass = ViewData["BodyClass"] as string;
+    var extraBodyClass = ViewData["BodyClass"] as string;
+    var pageTitle = ViewData["Title"] as string ?? "Meal Planner";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var bodyClass = string.Join(" ", new[] { "app-body", extraBodyClass }.Where(value => !string.IsNullOrWhiteSpace(value)));
+
+    string GetNavLinkClass(string controller, string? action = null)
+    {
+        // Marks the active navigation link for the current route.
+        var matchesController = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase);
+        var matchesAction = action is null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+        return matchesController && matchesAction
+            ? "app-nav__link app-nav__link--active"
+            : "app-nav__link";
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MealPlannerApp</title>
+    <title>@pageTitle - MealPlannerApp</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="@bodyClass">
-<header>
-    <nav class="navbar navbar-expand bg-dark shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-white" asp-controller="Home" asp-action="Index">MealPlannerApp</a>
-            <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
-                <a class="btn btn-outline-light btn-sm" asp-controller="Home" asp-action="Index">Home</a>
-                <a class="btn btn-outline-light btn-sm" asp-controller="Recipes" asp-action="Index">Recipes</a>
-                <a class="btn btn-outline-light btn-sm" asp-controller="Ingredients" asp-action="Index">Ingredients</a>
-                <a class="btn btn-outline-light btn-sm" asp-controller="MealPlanTemplates" asp-action="Index">Shared Plans</a>
+<div class="app-shell">
+    @* Sidebar holds primary navigation and account actions. *@
+    <aside class="app-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="appSidebar" aria-labelledby="appSidebarLabel">
+        <div class="offcanvas-header app-sidebar__mobile-header">
+            <div>
+                <p class="app-brand__eyebrow mb-1">Meal Planner</p>
+                <h2 class="h5 mb-0" id="appSidebarLabel">Navigation</h2>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body app-sidebar__body">
+            <div class="app-brand">
+                <p class="app-brand__eyebrow">Cold Workflow</p>
+                <a class="app-brand__title" asp-controller="Home" asp-action="Index">Meal Planner</a>
+                <p class="app-brand__copy">
+                    Recipes, ingredients, private weekly plans, and shared templates in one calmer workspace.
+                </p>
+            </div>
+
+            <nav class="app-nav" aria-label="Primary">
+                <div class="app-nav__group">
+                    <p class="app-nav__label">Explore</p>
+                    <a class="@GetNavLinkClass("Home", "Index")" asp-controller="Home" asp-action="Index">Overview</a>
+                    <a class="@GetNavLinkClass("Recipes")" asp-controller="Recipes" asp-action="Index">Recipes</a>
+                    <a class="@GetNavLinkClass("Ingredients")" asp-controller="Ingredients" asp-action="Index">Ingredients</a>
+                    <a class="@GetNavLinkClass("MealPlanTemplates")" asp-controller="MealPlanTemplates" asp-action="Index">Shared Plans</a>
+                </div>
+
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a class="btn btn-outline-light btn-sm" asp-controller="MealPlans" asp-action="Index">Meal Plans</a>
-                    <a class="btn btn-outline-light btn-sm" asp-controller="MealPlans" asp-action="Weekly">Weekly Planner</a>
-                    <a class="btn btn-outline-light btn-sm" asp-controller="MealPlans" asp-action="History">Progress</a>
-                    @if (User.IsInRole(ApplicationRoles.Admin))
-                    {
-                        <a class="btn btn-warning btn-sm" asp-controller="Recipes" asp-action="Moderation">Recipe Review</a>
-                        <a class="btn btn-warning btn-sm" asp-controller="MealPlanTemplates" asp-action="Moderation">Plan Review</a>
-                    }
-                    <span class="text-white-50 small px-2">Signed in as <span class="text-white">@User.Identity.Name</span></span>
-                    @if (User.IsInRole(ApplicationRoles.Admin))
-                    {
-                        <span class="badge text-bg-warning">Admin</span>
-                    }
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-light btn-sm">Log Out</button>
-                    </form>
+                    <div class="app-nav__group">
+                        <p class="app-nav__label">Workspace</p>
+                        <a class="@GetNavLinkClass("MealPlans", "Index")" asp-controller="MealPlans" asp-action="Index">Meal Plans</a>
+                        <a class="@GetNavLinkClass("MealPlans", "Weekly")" asp-controller="MealPlans" asp-action="Weekly">Weekly Planner</a>
+                        <a class="@GetNavLinkClass("MealPlans", "History")" asp-controller="MealPlans" asp-action="History">Progress</a>
+                    </div>
+                }
+
+                @if (User.IsInRole(ApplicationRoles.Admin))
+                {
+                    <div class="app-nav__group">
+                        <p class="app-nav__label">Admin</p>
+                        <a class="@GetNavLinkClass("Recipes", "Moderation")" asp-controller="Recipes" asp-action="Moderation">Recipe Review</a>
+                        <a class="@GetNavLinkClass("MealPlanTemplates", "Moderation")" asp-controller="MealPlanTemplates" asp-action="Moderation">Plan Review</a>
+                    </div>
+                }
+            </nav>
+
+            <div class="app-sidebar__account">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <section class="app-user-card">
+                        <p class="app-user-card__label">Signed In</p>
+                        <div class="app-user-card__name">@User.Identity?.Name</div>
+                        @if (User.IsInRole(ApplicationRoles.Admin))
+                        {
+                            <span class="badge text-bg-warning">Admin</span>
+                        }
+                        <div class="app-user-card__actions">
+                            <a class="btn btn-primary btn-sm" asp-controller="MealPlans" asp-action="Weekly">Open Planner</a>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="btn btn-outline-light btn-sm w-100">Log Out</button>
+                            </form>
+                        </div>
+                    </section>
                 }
                 else
                 {
-                    <a class="btn btn-outline-light btn-sm" asp-controller="Account" asp-action="Login">Log In</a>
-                    <a class="btn btn-light btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+                    <section class="app-user-card">
+                        <p class="app-user-card__label">Account</p>
+                        <p class="app-user-card__copy">Create an account to keep plans private and reusable across weeks.</p>
+                        <div class="app-user-card__actions">
+                            <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+                            <a class="btn btn-outline-light btn-sm" asp-controller="Account" asp-action="Login">Log In</a>
+                        </div>
+                    </section>
                 }
             </div>
         </div>
-    </nav>
-</header>
+    </aside>
 
-<div class="@(useWideLayout ? "app-wide-layout" : "container mt-4")">
-    @if (TempData["SuccessMessage"] is string successMessage)
-    {
-        <div class="alert alert-success @(useWideLayout ? "app-wide-layout__alert" : string.Empty)" role="alert">@successMessage</div>
-    }
-    @if (TempData["ErrorMessage"] is string errorMessage)
-    {
-        <div class="alert alert-danger @(useWideLayout ? "app-wide-layout__alert" : string.Empty)" role="alert">@errorMessage</div>
-    }
-    <main role="main">
-        @RenderBody()
-    </main>
-</div>
+    <div class="app-shell__main">
+        @* Topbar mirrors the current page and key auth actions. *@
+        <header class="app-topbar">
+            <div class="app-topbar__identity">
+                <button class="btn app-menu-button d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar">
+                    Menu
+                </button>
+                <div>
+                    <p class="app-topbar__eyebrow">Meal planner workspace</p>
+                    <p class="app-topbar__title">@pageTitle</p>
+                </div>
+            </div>
 
-<footer class="bg-light text-center text-muted mt-5 p-3 border-top">
-    <div class="container">
-        &copy; 2026 - MealPlannerApp
+            <div class="app-topbar__meta">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span class="app-topbar__status">@User.Identity.Name</span>
+                    <a class="btn btn-outline-primary btn-sm" asp-controller="MealPlans" asp-action="Weekly">Weekly Planner</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-primary btn-sm" asp-controller="Account" asp-action="Login">Log In</a>
+                    <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Register</a>
+                }
+            </div>
+        </header>
+
+        <div class="app-page @(useWideLayout ? "app-page--wide" : string.Empty)">
+            @* Flash messages show the result of the last action. *@
+            @if (TempData["SuccessMessage"] is string successMessage)
+            {
+                <div class="alert alert-success app-alert" role="alert">@successMessage</div>
+            }
+
+            @if (TempData["ErrorMessage"] is string errorMessage)
+            {
+                <div class="alert alert-danger app-alert" role="alert">@errorMessage</div>
+            }
+
+            <main role="main" class="app-page__surface @(useWideLayout ? "app-page__surface--wide" : string.Empty)">
+                @RenderBody()
+            </main>
+        </div>
+
+        @* Footer closes the shared application shell. *@
+        <footer class="app-footer">
+            <div class="app-footer__surface">
+                <span>&copy; @DateTime.Now.Year MealPlannerApp</span>
+                <span class="app-footer__dot">&middot;</span>
+                <span>Cold palette workspace for planning meals with less visual noise.</span>
+            </div>
+        </footer>
     </div>
-</footer>
+</div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

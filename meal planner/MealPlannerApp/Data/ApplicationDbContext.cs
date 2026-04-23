@@ -5,13 +5,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Data;
 
+/// <summary>
+/// EF Core database context for Identity and meal planner data.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
+    /// <summary>
+    /// Receives database options from dependency injection.
+    /// </summary>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
+    // Tables used by the meal planner domain.
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
@@ -21,10 +28,14 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
     public DbSet<MealPlanTemplateMeal> MealPlanTemplateMeals => Set<MealPlanTemplateMeal>();
     public DbSet<UserIngredientPreference> UserIngredientPreferences => Set<UserIngredientPreference>();
 
+    /// <summary>
+    /// Configures table names, relationships, defaults, and seed data.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // Maps the Identity user table to the app's user model.
         modelBuilder.Entity<User>()
             .ToTable("Users");
 
@@ -57,6 +68,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .Property(u => u.FatTargetGrams)
             .HasDefaultValue(56.0);
 
+        // Connects users to their owned planner data.
         modelBuilder.Entity<User>()
             .HasMany(u => u.MealPlans)
             .WithOne(mp => mp.User)
@@ -79,6 +91,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .WithOne(preference => preference.User)
             .HasForeignKey(preference => preference.UserId);
 
+        // Connects meal plan days to meals and recipes.
         modelBuilder.Entity<MealPlan>()
             .HasMany(mp => mp.Meals)
             .WithOne(m => m.MealPlan)
@@ -107,6 +120,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasIndex(ri => new { ri.RecipeId, ri.IngredientId })
             .IsUnique();
 
+        // Keeps each user preference unique per ingredient and type.
         modelBuilder.Entity<UserIngredientPreference>()
             .HasOne(preference => preference.Ingredient)
             .WithMany(ingredient => ingredient.UserPreferences)
@@ -117,6 +131,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             .HasIndex(preference => new { preference.UserId, preference.IngredientId, preference.PreferenceType })
             .IsUnique();
 
+        // Connects shareable templates to their saved meals.
         modelBuilder.Entity<MealPlanTemplate>()
             .HasMany(t => t.Meals)
             .WithOne(m => m.MealPlanTemplate)
@@ -130,6 +145,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
 
         var seedCreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+        // Seeds the default admin account.
         modelBuilder.Entity<User>().HasData(
             new User
             {
@@ -151,6 +167,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
                 Role = UserRole.Admin
             });
 
+        // Seeds the base ingredient catalog.
         modelBuilder.Entity<Ingredient>().HasData(
             new Ingredient { Id = 1, CreatedAt = seedCreatedAt, Name = "Chicken Breast", CaloriesPer100g = 165, ProteinPer100g = 31.0, CarbsPer100g = 0.0, FatPer100g = 3.6 },
             new Ingredient { Id = 2, CreatedAt = seedCreatedAt, Name = "Rice", CaloriesPer100g = 130, ProteinPer100g = 2.7, CarbsPer100g = 28.0, FatPer100g = 0.3 },
@@ -174,6 +191,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
             new Ingredient { Id = 20, CreatedAt = seedCreatedAt, Name = "Cucumber", CaloriesPer100g = 16, ProteinPer100g = 0.7, CarbsPer100g = 3.6, FatPer100g = 0.1 },
             new Ingredient { Id = 21, CreatedAt = seedCreatedAt, Name = "Avocado", CaloriesPer100g = 160, ProteinPer100g = 2.0, CarbsPer100g = 8.5, FatPer100g = 14.7 });
 
+        // Seeds starter recipes used by default plans.
         modelBuilder.Entity<Recipe>().HasData(
             new Recipe
             {
@@ -327,6 +345,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<int>, i
                 ApprovalStatus = ApprovalStatus.Approved
             });
 
+        // Seeds recipe-to-ingredient quantities.
         modelBuilder.Entity<RecipeIngredient>().HasData(
             new RecipeIngredient { Id = 1, CreatedAt = seedCreatedAt, RecipeId = 1, IngredientId = 1, QuantityInGrams = 200 },
             new RecipeIngredient { Id = 2, CreatedAt = seedCreatedAt, RecipeId = 1, IngredientId = 2, QuantityInGrams = 150 },

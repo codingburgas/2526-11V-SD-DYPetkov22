@@ -1,5 +1,7 @@
 @model MealPlannerApp.Dtos.MealPlans.WeeklyMealPlannerDto
+@* Shows the main weekly planner dashboard. *@
 @{
+    // Sets the dashboard layout and selects the focused day.
     ViewData["Title"] = "Meal Planner Dashboard";
     ViewData["UseWideLayout"] = true;
     ViewData["BodyClass"] = "dashboard-body";
@@ -26,16 +28,19 @@
 }
 
 @functions {
+    // Returns a fallback name when a meal slot is empty.
     private static string GetMealName(WeeklyMealItemDto? meal, string emptyText)
     {
         return meal?.RecipeName ?? emptyText;
     }
 
+    // Returns zero calories when a meal slot is empty.
     private static int GetMealCalories(WeeklyMealItemDto? meal)
     {
         return meal?.Calories ?? 0;
     }
 
+    // Returns empty nutrition when a meal slot is empty.
     private static NutritionSummaryDto GetMealNutrition(WeeklyMealItemDto? meal)
     {
         return meal?.Nutrition ?? new NutritionSummaryDto();
@@ -43,6 +48,7 @@
 }
 
 <section class="meal-dashboard">
+    @* Sidebar contains generation controls and starter plans. *@
     <aside class="meal-dashboard__sidebar">
         <div class="planner-brand">
             <p class="planner-brand__eyebrow">Smart Planner</p>
@@ -193,6 +199,7 @@
         }
     </aside>
 
+    @* Main dashboard shows selected day, week navigation, meals, and groceries. *@
     <div class="meal-dashboard__main">
         <header class="dashboard-header">
             <div>
@@ -209,6 +216,7 @@
             </div>
         </header>
 
+        @* Summary cards show calories, targets, and week range. *@
         <section class="dashboard-summary">
             <article class="dashboard-summary__card">
                 <span class="dashboard-summary__label">Today</span>
@@ -227,6 +235,7 @@
             </article>
         </section>
 
+        @* Day chips switch the focused day inside the selected week. *@
         <section class="dashboard-day-strip">
             @foreach (var day in Model.Days)
             {
@@ -242,6 +251,7 @@
             }
         </section>
 
+        @* Meal cards show one slot each and allow quick swaps. *@
         <section class="meal-grid">
             <article class="meal-card meal-card--breakfast">
                 <div class="meal-card__top">
@@ -436,6 +446,7 @@
             </article>
         </section>
 
+        @* Grocery panel uses the most-used ingredients for the week. *@
         <section class="grocery-panel">
             <div class="grocery-panel__heading">
                 <div>
@@ -467,6 +478,7 @@
             }
         </section>
 
+        @* Starter panel applies a predefined full-week plan. *@
         @if (Model.PresetPlans.Any())
         {
             <section class="starter-panel">
@@ -512,13 +524,16 @@
 </section>
 
 @section Styles {
+    @* Loads dashboard-specific styling. *@
     <link rel="stylesheet" href="~/css/meal-planner-dashboard.css" asp-append-version="true" />
 }
 
 @section Scripts {
+    @* Enables validation and macro preset syncing. *@
     <partial name="_ValidationScriptsPartial" />
     <script>
         (() => {
+            // Connects visible calorie/diet controls to hidden macro fields.
             const caloriesInput = document.getElementById("dashboardCaloriesTarget");
             const dietTypeSelect = document.getElementById("dashboardDietType");
             const proteinInput = document.getElementById("GeneratePlan_ProteinTargetGrams");
@@ -538,6 +553,7 @@
             };
 
             const applyDietPreset = () => {
+                // Converts the selected diet split into grams.
                 const calories = Math.max(Number.parseFloat(caloriesInput.value) || 0, 1200);
                 let proteinRatio = 0.30;
                 let carbsRatio = 0.40;

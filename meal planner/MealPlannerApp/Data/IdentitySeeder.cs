@@ -5,12 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Data;
 
+/// <summary>
+/// Ensures default roles and the admin account exist.
+/// </summary>
 public static class IdentitySeeder
 {
     private const string DefaultAdminUserName = "admin";
     private const string DefaultAdminEmail = "admin@mealplanner.local";
     private const string DefaultAdminPassword = "Admin123!";
 
+    /// <summary>
+    /// Creates roles, admin user, and synced Identity role rows.
+    /// </summary>
     public static async Task SeedAsync(IServiceProvider serviceProvider, IConfiguration configuration)
     {
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
@@ -31,6 +37,9 @@ public static class IdentitySeeder
         await SyncIdentityRolesAsync(userManager);
     }
 
+    /// <summary>
+    /// Creates or repairs the default admin account.
+    /// </summary>
     private static async Task EnsureAdminAccountAsync(UserManager<User> userManager, IConfiguration configuration)
     {
         var adminPassword = configuration["IdentitySeed:AdminPassword"];
@@ -103,6 +112,9 @@ public static class IdentitySeeder
         }
     }
 
+    /// <summary>
+    /// Matches Identity roles to the app UserRole value.
+    /// </summary>
     private static async Task SyncIdentityRolesAsync(UserManager<User> userManager)
     {
         var users = await userManager.Users.ToListAsync();
@@ -130,6 +142,9 @@ public static class IdentitySeeder
         }
     }
 
+    /// <summary>
+    /// Throws a clear error when Identity work fails.
+    /// </summary>
     private static void EnsureSuccess(IdentityResult result, string operation)
     {
         if (result.Succeeded)

@@ -7,8 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
 
+/// <summary>
+/// Manages private weekly meal plans and plan generation.
+/// </summary>
 public class MealPlanService : IMealPlanService
 {
+    // Recipe words that make a meal fit breakfast better.
     private static readonly IReadOnlyCollection<string> BreakfastKeywords =
     [
         "breakfast",
@@ -20,6 +24,7 @@ public class MealPlanService : IMealPlanService
         "toast"
     ];
 
+    // Recipe words that make a meal fit lunch or dinner better.
     private static readonly IReadOnlyCollection<string> HeartyMealKeywords =
     [
         "chicken",
@@ -32,6 +37,7 @@ public class MealPlanService : IMealPlanService
         "roast"
     ];
 
+    // Built-in starter weeks copied into a user's planner.
     private static readonly IReadOnlyCollection<PresetMealPlanDefinition> PresetMealPlanDefinitions =
     [
         new(
@@ -119,11 +125,17 @@ public class MealPlanService : IMealPlanService
 
     private readonly ApplicationDbContext _dbContext;
 
+    /// <summary>
+    /// Receives the EF Core context.
+    /// </summary>
     public MealPlanService(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Gets saved planner preferences for a user.
+    /// </summary>
     public async Task<PlannerPreferencesResult> GetPlannerPreferences(int userId)
     {
         var preferences = await GetStoredPlannerPreferencesSnapshot(userId);
@@ -142,6 +154,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Saves planner targets and blocked ingredients.
+    /// </summary>
     public async Task SavePlannerPreferences(SavePlannerPreferencesRequest request)
     {
         var user = await _dbContext.Users
@@ -169,6 +184,7 @@ public class MealPlanService : IMealPlanService
             request.ExcludedIngredientIds.Intersect(validIngredientIds),
             request.AllergyIngredientIds.Intersect(validIngredientIds));
 
+        // Stores normalized values back on the user.
         user.PreferredMealsPerDay = preferences.MealsPerDay;
         user.BodyWeightKg = preferences.BodyWeightKg;
         user.ProteinTargetGrams = preferences.DailyNutritionTarget.ProteinGrams;
@@ -208,6 +224,9 @@ public class MealPlanService : IMealPlanService
         await _dbContext.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Gets recent weekly totals for progress history.
+    /// </summary>
     public async Task<IReadOnlyCollection<WeeklyProgressSummaryResult>> GetWeeklyHistory(int userId, int weeks = 8)
     {
         var normalizedWeeks = Math.Max(1, weeks);
@@ -245,6 +264,9 @@ public class MealPlanService : IMealPlanService
             .ToList();
     }
 
+    /// <summary>
+    /// Gets all meal plan days for a user.
+    /// </summary>
     public async Task<IEnumerable<MealPlan>> GetAllMealPlans(int userId)
     {
         return await _dbContext.MealPlans
@@ -258,6 +280,9 @@ public class MealPlanService : IMealPlanService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Gets one meal plan day for a user.
+    /// </summary>
     public async Task<MealPlan?> GetMealPlanById(int id, int userId)
     {
         return await _dbContext.MealPlans
@@ -270,6 +295,9 @@ public class MealPlanService : IMealPlanService
             .FirstOrDefaultAsync(mp => mp.Id == id);
     }
 
+    /// <summary>
+    /// Creates a meal plan day or returns the existing one.
+    /// </summary>
     public async Task<MealPlan> CreateMealPlan(int userId, MealPlan mealPlan)
     {
         var targetDate = mealPlan.Date.Date;
@@ -291,6 +319,9 @@ public class MealPlanService : IMealPlanService
         return mealPlan;
     }
 
+    /// <summary>
+    /// Updates the date of a user's meal plan day.
+    /// </summary>
     public async Task<bool> UpdateMealPlan(int userId, MealPlan mealPlan)
     {
         var existingMealPlan = await _dbContext.MealPlans
@@ -305,6 +336,9 @@ public class MealPlanService : IMealPlanService
         return true;
     }
 
+    /// <summary>
+    /// Deletes a user's meal plan day.
+    /// </summary>
     public async Task<bool> DeleteMealPlan(int id, int userId)
     {
         var mealPlan = await _dbContext.MealPlans
@@ -319,6 +353,9 @@ public class MealPlanService : IMealPlanService
         return true;
     }
 
+    /// <summary>
+    /// Adds one recipe meal to a plan day.
+    /// </summary>
     public async Task<Meal?> AddMealToPlan(int mealPlanId, int userId, bool isAdmin, Meal meal)
     {
         var mealPlanExists = await _dbContext.MealPlans
@@ -370,6 +407,9 @@ public class MealPlanService : IMealPlanService
         return meal;
     }
 
+    /// <summary>
+    /// Swaps one meal for another matching recipe.
+    /// </summary>
     public async Task<bool> SwapMeal(int mealId, int userId)
     {
         var meal = await _dbContext.Meals
@@ -414,6 +454,7 @@ public class MealPlanService : IMealPlanService
             .Select(existingMeal => existingMeal.RecipeId)
             .ToHashSet();
 
+        // Avoids repeating the same meal type on consecutive days.
         var previousRecipeId = weeklyMealPlans
             .Where(mealPlan => mealPlan.Date.Date < meal.MealPlan.Date.Date)
             .OrderByDescending(mealPlan => mealPlan.Date)
@@ -437,6 +478,9 @@ public class MealPlanService : IMealPlanService
         return true;
     }
 
+    /// <summary>
+    /// Builds weekly totals, daily totals, and top ingredients.
+    /// </summary>
     public async Task<WeeklyMealPlanResult> GetWeeklyPlan(int userId, DateTime? weekStart = null)
     {
         var startDate = weekStart.HasValue
@@ -480,6 +524,8 @@ public class MealPlanService : IMealPlanService
         var weeklyNutrition = dailyNutrition.Aggregate(
             new NutritionSummaryResult(),
             (total, result) => AddNutrition(total, result.Nutrition));
+
+        // Finds the most-used ingredients for the grocery snapshot.
         var mostUsedIngredients = mealPlans
             .SelectMany(mp => mp.Meals)
             .SelectMany(m => m.Recipe.RecipeIngredients.Select(ri => new
@@ -512,6 +558,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Lists starter plans that have all required recipes.
+    /// </summary>
     public async Task<IReadOnlyCollection<PresetMealPlanOptionResult>> GetPresetMealPlans()
     {
         var recipes = await GetPresetRecipes();
@@ -536,6 +585,9 @@ public class MealPlanService : IMealPlanService
             .ToList();
     }
 
+    /// <summary>
+    /// Replaces a week with one built-in starter plan.
+    /// </summary>
     public async Task StartPresetMealPlan(StartPresetMealPlanRequest request)
     {
         var presetPlan = PresetMealPlanDefinitions.FirstOrDefault(plan => plan.Key == request.PresetKey);
@@ -590,6 +642,9 @@ public class MealPlanService : IMealPlanService
         await transaction.CommitAsync();
     }
 
+    /// <summary>
+    /// Replaces a week with generated meals from preferences.
+    /// </summary>
     public async Task GeneratePersonalizedMealPlan(GeneratePersonalizedMealPlanRequest request)
     {
         var userExists = await _dbContext.Users.AnyAsync(u => u.Id == request.UserId);
@@ -636,6 +691,9 @@ public class MealPlanService : IMealPlanService
         await transaction.CommitAsync();
     }
 
+    /// <summary>
+    /// Loads approved recipes needed by starter plans.
+    /// </summary>
     private async Task<Dictionary<int, Recipe>> GetPresetRecipes()
     {
         var recipeIds = PresetMealPlanDefinitions
@@ -649,6 +707,9 @@ public class MealPlanService : IMealPlanService
             .ToDictionaryAsync(recipe => recipe.Id);
     }
 
+    /// <summary>
+    /// Clears and creates all seven days for a week.
+    /// </summary>
     private async Task<Dictionary<DateTime, MealPlan>> PrepareWeekForReplacement(int userId, DateTime weekStart)
     {
         var weekEnd = weekStart.AddDays(7);
@@ -701,6 +762,9 @@ public class MealPlanService : IMealPlanService
         return mealPlansByDate;
     }
 
+    /// <summary>
+    /// Loads recipe candidates allowed by preferences.
+    /// </summary>
     private async Task<List<PlanningRecipeCandidate>> GetPlanningCandidates(int userId, PlannerPreferencesSnapshot preferences)
     {
         var recipes = await _dbContext.Recipes
@@ -724,6 +788,9 @@ public class MealPlanService : IMealPlanService
             .ToList();
     }
 
+    /// <summary>
+    /// Reads saved user preferences as normalized values.
+    /// </summary>
     private async Task<PlannerPreferencesSnapshot> GetStoredPlannerPreferencesSnapshot(int userId)
     {
         var user = await _dbContext.Users
@@ -749,6 +816,9 @@ public class MealPlanService : IMealPlanService
                 .Select(preference => preference.IngredientId));
     }
 
+    /// <summary>
+    /// Normalizes planner inputs and blocked ingredient sets.
+    /// </summary>
     private static PlannerPreferencesSnapshot CreatePlannerPreferencesSnapshot(
         int mealsPerDay,
         double bodyWeightKg,
@@ -796,6 +866,9 @@ public class MealPlanService : IMealPlanService
             blockedIngredientIds);
     }
 
+    /// <summary>
+    /// Chooses meals for each day and meal slot.
+    /// </summary>
     private static IReadOnlyCollection<GeneratedMealPlanEntry> BuildGeneratedMeals(
         IReadOnlyCollection<PlanningRecipeCandidate> candidates,
         PlannerPreferencesSnapshot preferences)
@@ -840,6 +913,9 @@ public class MealPlanService : IMealPlanService
         return plannedMeals;
     }
 
+    /// <summary>
+    /// Returns the meal slots used for a day.
+    /// </summary>
     private static MealType[] GetMealTypesForDay(int mealsPerDay)
     {
         return mealsPerDay switch
@@ -850,6 +926,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Finds a meal type index in the selected slots.
+    /// </summary>
     private static int GetMealIndex(MealType[] mealTypes, MealType mealType)
     {
         var index = Array.IndexOf(mealTypes, mealType);
@@ -867,6 +946,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Picks the best recipe for one meal slot.
+    /// </summary>
     private static SelectedMealPlan SelectRecipeForMeal(
         IReadOnlyCollection<PlanningRecipeCandidate> candidates,
         MealType mealType,
@@ -876,6 +958,7 @@ public class MealPlanService : IMealPlanService
         int? previousRecipeId,
         IReadOnlyCollection<int>? excludedRecipeIds = null)
     {
+        // Ranks by meal type fit, repetition, nutrition match, speed, and name.
         var excludedRecipeIdSet = excludedRecipeIds?.ToHashSet() ?? [];
         var rankedCandidates = candidates
             .Where(candidate => !excludedRecipeIdSet.Contains(candidate.Recipe.Id))
@@ -918,6 +1001,9 @@ public class MealPlanService : IMealPlanService
             selected.ScaledNutrition);
     }
 
+    /// <summary>
+    /// Scores how well a recipe fits breakfast, lunch, or dinner.
+    /// </summary>
     private static int GetMealTypeScore(PlanningRecipeCandidate candidate, MealType mealType)
     {
         var hasBreakfastKeyword = BreakfastKeywords.Any(keyword => candidate.SearchText.Contains(keyword, StringComparison.Ordinal));
@@ -932,6 +1018,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Scores breakfast-friendly recipes.
+    /// </summary>
     private static int GetBreakfastScore(PlanningRecipeCandidate candidate, bool hasBreakfastKeyword)
     {
         var score = 0;
@@ -963,6 +1052,9 @@ public class MealPlanService : IMealPlanService
         return score;
     }
 
+    /// <summary>
+    /// Scores lunch-friendly recipes.
+    /// </summary>
     private static int GetLunchScore(PlanningRecipeCandidate candidate, bool hasBreakfastKeyword, bool hasHeartyKeyword)
     {
         var score = 0;
@@ -994,6 +1086,9 @@ public class MealPlanService : IMealPlanService
         return score;
     }
 
+    /// <summary>
+    /// Scores dinner-friendly recipes.
+    /// </summary>
     private static int GetDinnerScore(PlanningRecipeCandidate candidate, bool hasBreakfastKeyword, bool hasHeartyKeyword)
     {
         var score = 0;
@@ -1025,6 +1120,9 @@ public class MealPlanService : IMealPlanService
         return score;
     }
 
+    /// <summary>
+    /// Checks if a recipe violates saved preferences.
+    /// </summary>
     private static bool IsRecipeBlockedForPreferences(Recipe recipe, PlannerPreferencesSnapshot preferences)
     {
         return IsRecipeBlockedForPreferences(
@@ -1033,6 +1131,9 @@ public class MealPlanService : IMealPlanService
             preferences);
     }
 
+    /// <summary>
+    /// Checks blocked food text and ingredient ids.
+    /// </summary>
     private static bool IsRecipeBlockedForPreferences(
         string searchText,
         IEnumerable<int> ingredientIds,
@@ -1046,6 +1147,9 @@ public class MealPlanService : IMealPlanService
         return ingredientIds.Any(ingredientId => preferences.BlockedIngredientIds.Contains(ingredientId));
     }
 
+    /// <summary>
+    /// Scores how far actual nutrition is from the target.
+    /// </summary>
     private static double CalculateNutritionDistance(NutritionSummaryResult actual, NutritionSummaryResult target)
     {
         return Math.Abs(actual.Calories - target.Calories) / 25.0
@@ -1054,6 +1158,9 @@ public class MealPlanService : IMealPlanService
                + (Math.Abs(actual.FatGrams - target.FatGrams) * 1.5);
     }
 
+    /// <summary>
+    /// Adds two nutrition totals.
+    /// </summary>
     private static NutritionSummaryResult AddNutrition(NutritionSummaryResult left, NutritionSummaryResult right)
     {
         return new NutritionSummaryResult
@@ -1065,6 +1172,9 @@ public class MealPlanService : IMealPlanService
         };
     }
 
+    /// <summary>
+    /// Splits food exclusion text into terms.
+    /// </summary>
     private static IReadOnlyCollection<string> SplitExcludedFoods(string? excludedFoods)
     {
         return (excludedFoods ?? string.Empty)
@@ -1072,6 +1182,9 @@ public class MealPlanService : IMealPlanService
             .ToArray();
     }
 
+    /// <summary>
+    /// Builds searchable recipe text.
+    /// </summary>
     private static string BuildRecipeSearchText(Recipe recipe)
     {
         return string.Join(
@@ -1086,25 +1199,35 @@ public class MealPlanService : IMealPlanService
             .ToLowerInvariant();
     }
 
+    // In-memory starter plan definition.
     private sealed record PresetMealPlanDefinition(
         string Key,
         string Name,
         string Description,
         IReadOnlyCollection<PresetMealPlanEntry> Meals);
 
+    // One meal entry in a starter plan.
     private sealed record PresetMealPlanEntry(int DayOffset, MealType MealType, int RecipeId);
+
+    // Recipe data used while generating plans.
     private sealed record PlanningRecipeCandidate(
         Recipe Recipe,
         string SearchText,
         NutritionSummaryResult Nutrition,
         IReadOnlySet<int> IngredientIds);
+
+    // Selected recipe plus its portion and nutrition.
     private sealed record SelectedMealPlan(Recipe Recipe, double PortionMultiplier, NutritionSummaryResult Nutrition);
+
+    // Meal generated for a specific day offset.
     private sealed record GeneratedMealPlanEntry(
         int DayOffset,
         MealType MealType,
         int RecipeId,
         double PortionMultiplier,
         NutritionSummaryResult Nutrition);
+
+    // Normalized planner preferences used during generation.
     private sealed record PlannerPreferencesSnapshot(
         int MealsPerDay,
         double BodyWeightKg,

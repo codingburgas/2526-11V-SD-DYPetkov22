@@ -1,4 +1,5 @@
 @model IEnumerable<MealPlannerApp.Dtos.MealPlanTemplates.MealPlanTemplateDto>
+@* Lists visible shared plan templates. *@
 @{
     ViewData["Title"] = "Shared Plan Templates";
     var currentUserId = User.Identity?.IsAuthenticated == true ? User.GetRequiredUserId() : -1;

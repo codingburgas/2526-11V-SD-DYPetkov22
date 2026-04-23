@@ -5,15 +5,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
 
+/// <summary>
+/// Manages shared weekly meal plan templates.
+/// </summary>
 public class MealPlanTemplateService : IMealPlanTemplateService
 {
     private readonly ApplicationDbContext _dbContext;
 
+    /// <summary>
+    /// Receives the EF Core context.
+    /// </summary>
     public MealPlanTemplateService(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Gets templates visible to the current visitor.
+    /// </summary>
     public async Task<IReadOnlyCollection<MealPlanTemplate>> GetVisibleTemplates(int? currentUserId, bool isAdmin)
     {
         return await GetVisibleTemplatesQuery(currentUserId, isAdmin)
@@ -27,6 +36,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Gets one visible template by id.
+    /// </summary>
     public async Task<MealPlanTemplate?> GetTemplateById(int id, int? currentUserId, bool isAdmin)
     {
         return await GetVisibleTemplatesQuery(currentUserId, isAdmin)
@@ -38,6 +50,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    /// <summary>
+    /// Copies one user week into a reusable template.
+    /// </summary>
     public async Task<MealPlanTemplate> CreateFromWeek(int ownerId, DateTime weekStart, string name, string? description, bool submitForReview)
     {
         var normalizedWeekStart = Infrastructure.WeekDateHelper.GetWeekStart(weekStart);
@@ -59,6 +74,7 @@ public class MealPlanTemplateService : IMealPlanTemplateService
             .ThenBy(x => x.Meal.MealType)
             .ToList();
 
+        // A template needs at least one meal to share.
         if (sourceMeals.Count == 0)
         {
             throw new InvalidOperationException("Add meals to your week before creating a shareable plan template.");
@@ -91,6 +107,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         return template;
     }
 
+    /// <summary>
+    /// Sends a template to admin review.
+    /// </summary>
     public async Task<bool> SubmitForReview(int id, int ownerId, bool isAdmin)
     {
         var template = await _dbContext.MealPlanTemplates.FindAsync(id);
@@ -109,6 +128,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         return true;
     }
 
+    /// <summary>
+    /// Gets templates waiting for review.
+    /// </summary>
     public async Task<IReadOnlyCollection<MealPlanTemplate>> GetPendingTemplates()
     {
         return await _dbContext.MealPlanTemplates
@@ -120,6 +142,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Approves a template when its recipes are approved.
+    /// </summary>
     public async Task<bool> ApproveTemplate(int id)
     {
         var template = await _dbContext.MealPlanTemplates
@@ -142,6 +167,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         return true;
     }
 
+    /// <summary>
+    /// Rejects a template with optional review notes.
+    /// </summary>
     public async Task<bool> RejectTemplate(int id, string? reviewNotes)
     {
         var template = await _dbContext.MealPlanTemplates.FindAsync(id);
@@ -155,6 +183,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         return true;
     }
 
+    /// <summary>
+    /// Replaces a user's selected week with a template.
+    /// </summary>
     public async Task<bool> ApplyTemplateToWeek(int id, int currentUserId, DateTime weekStart, bool isAdmin)
     {
         var template = await GetTemplateById(id, currentUserId, isAdmin);
@@ -178,6 +209,7 @@ public class MealPlanTemplateService : IMealPlanTemplateService
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
+        // Clears the week before copying template meals into it.
         var existingMealPlans = await _dbContext.MealPlans
             .Where(mp => mp.UserId == currentUserId && mp.Date >= rangeStart && mp.Date < rangeEnd)
             .Include(mp => mp.Meals)
@@ -244,6 +276,9 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         return true;
     }
 
+    /// <summary>
+    /// Applies public, owner, and admin template visibility rules.
+    /// </summary>
     private IQueryable<MealPlanTemplate> GetVisibleTemplatesQuery(int? currentUserId, bool isAdmin)
     {
         var query = _dbContext.MealPlanTemplates.AsQueryable();
@@ -263,11 +298,17 @@ public class MealPlanTemplateService : IMealPlanTemplateService
             t.OwnerId == currentUserId.Value);
     }
 
+    /// <summary>
+    /// Checks whether a user can manage the template.
+    /// </summary>
     private static bool CanManage(MealPlanTemplate template, int ownerId, bool isAdmin)
     {
         return isAdmin || template.OwnerId == ownerId;
     }
 
+    /// <summary>
+    /// Updates review status and review timestamps.
+    /// </summary>
     private static void ApplyReviewState(MealPlanTemplate template, ApprovalStatus status, string? reviewNotes)
     {
         template.ApprovalStatus = status;

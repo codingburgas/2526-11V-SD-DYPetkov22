@@ -6,15 +6,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
 
+/// <summary>
+/// Manages recipes, visibility, ownership, and review state.
+/// </summary>
 public class RecipeService : IRecipeService
 {
     private readonly ApplicationDbContext _dbContext;
 
+    /// <summary>
+    /// Receives the EF Core context.
+    /// </summary>
     public RecipeService(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Gets recipes visible to the current user with filters.
+    /// </summary>
     public async Task<IEnumerable<Recipe>> GetAllRecipes(
         int? currentUserId,
         bool isAdmin,
@@ -22,6 +31,7 @@ public class RecipeService : IRecipeService
         bool vegetarianOnly = false,
         bool highProteinOnly = false)
     {
+        // Starts from the visibility rules before applying search filters.
         IQueryable<Recipe> query = GetVisibleRecipesQuery(currentUserId, isAdmin)
             .Include(r => r.Owner)
             .Include(r => r.RecipeIngredients)
@@ -41,6 +51,7 @@ public class RecipeService : IRecipeService
 
         if (highProteinOnly)
         {
+            // Uses ingredient names to find simple high-protein recipes.
             var proteinKeywords = new[] { "chicken", "beef", "turkey", "egg", "tuna", "salmon", "tofu", "lentil", "beans", "yogurt" };
             query = query.Where(r =>
                 r.RecipeIngredients.Any(ri =>
@@ -54,6 +65,9 @@ public class RecipeService : IRecipeService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Gets one recipe when visible to the current user.
+    /// </summary>
     public async Task<Recipe?> GetRecipeById(int id, int? currentUserId, bool isAdmin)
     {
         return await GetVisibleRecipesQuery(currentUserId, isAdmin)
@@ -63,6 +77,9 @@ public class RecipeService : IRecipeService
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
+    /// <summary>
+    /// Creates a recipe as draft or pending review.
+    /// </summary>
     public async Task<Recipe> CreateRecipe(int ownerId, Recipe recipe, bool submitForReview)
     {
         recipe.OwnerId = ownerId;
@@ -74,6 +91,9 @@ public class RecipeService : IRecipeService
         return recipe;
     }
 
+    /// <summary>
+    /// Updates a recipe when the user can manage it.
+    /// </summary>
     public async Task<bool> UpdateRecipe(int recipeId, int ownerId, bool isAdmin, Recipe recipe, bool submitForReview)
     {
         var existingRecipe = await _dbContext.Recipes.FirstOrDefaultAsync(r => r.Id == recipeId);
@@ -112,6 +132,9 @@ public class RecipeService : IRecipeService
         return true;
     }
 
+    /// <summary>
+    /// Deletes a recipe when allowed and unused.
+    /// </summary>
     public async Task<DeleteOperationResult> DeleteRecipe(int id, int ownerId, bool isAdmin)
     {
         var recipe = await _dbContext.Recipes.FindAsync(id);
@@ -150,6 +173,9 @@ public class RecipeService : IRecipeService
         return DeleteOperationResult.Deleted;
     }
 
+    /// <summary>
+    /// Sends a recipe to admin review.
+    /// </summary>
     public async Task<bool> SubmitForReview(int id, int ownerId, bool isAdmin)
     {
         var recipe = await _dbContext.Recipes.FindAsync(id);
@@ -168,6 +194,9 @@ public class RecipeService : IRecipeService
         return true;
     }
 
+    /// <summary>
+    /// Gets all recipes waiting for review.
+    /// </summary>
     public async Task<IReadOnlyCollection<Recipe>> GetPendingRecipes()
     {
         return await _dbContext.Recipes
@@ -179,6 +208,9 @@ public class RecipeService : IRecipeService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Marks a recipe as approved.
+    /// </summary>
     public async Task<bool> ApproveRecipe(int id)
     {
         var recipe = await _dbContext.Recipes.FindAsync(id);
@@ -192,6 +224,9 @@ public class RecipeService : IRecipeService
         return true;
     }
 
+    /// <summary>
+    /// Marks a recipe as rejected with notes.
+    /// </summary>
     public async Task<bool> RejectRecipe(int id, string? reviewNotes)
     {
         var recipe = await _dbContext.Recipes.FindAsync(id);
@@ -205,6 +240,9 @@ public class RecipeService : IRecipeService
         return true;
     }
 
+    /// <summary>
+    /// Applies public, owner, and admin visibility rules.
+    /// </summary>
     private IQueryable<Recipe> GetVisibleRecipesQuery(int? currentUserId, bool isAdmin)
     {
         var query = _dbContext.Recipes.AsQueryable();
@@ -224,11 +262,17 @@ public class RecipeService : IRecipeService
             r.OwnerId == currentUserId.Value);
     }
 
+    /// <summary>
+    /// Checks whether a user can manage the recipe.
+    /// </summary>
     private static bool CanManage(Recipe recipe, int ownerId, bool isAdmin)
     {
         return isAdmin || recipe.OwnerId == ownerId;
     }
 
+    /// <summary>
+    /// Updates review status and review timestamps.
+    /// </summary>
     private static void ApplyReviewState(Recipe recipe, ApprovalStatus status, string? reviewNotes)
     {
         recipe.ApprovalStatus = status;

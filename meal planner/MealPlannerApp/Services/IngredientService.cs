@@ -6,15 +6,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
 
+/// <summary>
+/// Reads and changes ingredients in the database.
+/// </summary>
 public class IngredientService : IIngredientService
 {
     private readonly ApplicationDbContext _dbContext;
 
+    /// <summary>
+    /// Receives the EF Core context.
+    /// </summary>
     public IngredientService(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Gets all ingredients alphabetically.
+    /// </summary>
     public async Task<IEnumerable<Ingredient>> GetAllIngredients()
     {
         return await _dbContext.Ingredients
@@ -22,12 +31,18 @@ public class IngredientService : IIngredientService
             .ToListAsync();
     }
 
+    /// <summary>
+    /// Gets one ingredient by id.
+    /// </summary>
     public async Task<Ingredient?> GetIngredientById(int id)
     {
         return await _dbContext.Ingredients
             .FirstOrDefaultAsync(i => i.Id == id);
     }
 
+    /// <summary>
+    /// Adds a new ingredient.
+    /// </summary>
     public async Task<Ingredient> CreateIngredient(Ingredient ingredient)
     {
         ingredient.CreatedAt = DateTime.UtcNow;
@@ -36,6 +51,9 @@ public class IngredientService : IIngredientService
         return ingredient;
     }
 
+    /// <summary>
+    /// Updates ingredient nutrition values.
+    /// </summary>
     public async Task<bool> UpdateIngredient(Ingredient ingredient)
     {
         var existingIngredient = await _dbContext.Ingredients.FindAsync(ingredient.Id);
@@ -53,6 +71,9 @@ public class IngredientService : IIngredientService
         return true;
     }
 
+    /// <summary>
+    /// Deletes an ingredient only when nothing uses it.
+    /// </summary>
     public async Task<DeleteOperationResult> DeleteIngredient(int id)
     {
         var ingredient = await _dbContext.Ingredients.FindAsync(id);

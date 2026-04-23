@@ -8,17 +8,26 @@ using Microsoft.AspNetCore.Mvc;
 namespace MealPlannerApp.Controllers;
 
 [AllowAnonymous]
+/// <summary>
+/// Handles login, registration, logout, and access denial.
+/// </summary>
 public class AccountController : Controller
 {
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
 
+    /// <summary>
+    /// Receives Identity managers from dependency injection.
+    /// </summary>
     public AccountController(SignInManager<User> signInManager, UserManager<User> userManager)
     {
         _signInManager = signInManager;
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Shows the login form.
+    /// </summary>
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
@@ -30,6 +39,9 @@ public class AccountController : Controller
         return View(new LoginDto { ReturnUrl = returnUrl });
     }
 
+    /// <summary>
+    /// Signs in a user by email or username.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginDto dto)
@@ -72,6 +84,9 @@ public class AccountController : Controller
         return View(dto);
     }
 
+    /// <summary>
+    /// Shows the registration form.
+    /// </summary>
     [HttpGet]
     public IActionResult Register(string? returnUrl = null)
     {
@@ -83,6 +98,9 @@ public class AccountController : Controller
         return View(new RegisterDto { ReturnUrl = returnUrl });
     }
 
+    /// <summary>
+    /// Creates a new user account and signs it in.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterDto dto)
@@ -133,6 +151,9 @@ public class AccountController : Controller
         return RedirectToLocal(dto.ReturnUrl);
     }
 
+    /// <summary>
+    /// Signs the current user out.
+    /// </summary>
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -142,12 +163,18 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    /// <summary>
+    /// Shows the forbidden access page.
+    /// </summary>
     [HttpGet]
     public IActionResult AccessDenied()
     {
         return View();
     }
 
+    /// <summary>
+    /// Finds a user by email first or username first.
+    /// </summary>
     private async Task<User?> FindUserAsync(string login)
     {
         var trimmedLogin = login.Trim();
@@ -166,6 +193,9 @@ public class AccountController : Controller
             ?? await _userManager.FindByEmailAsync(trimmedLogin);
     }
 
+    /// <summary>
+    /// Redirects only to safe local URLs.
+    /// </summary>
     private IActionResult RedirectToLocal(string? returnUrl)
     {
         if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
