@@ -1,6 +1,7 @@
 using MealPlannerApp.Data;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services.Interfaces;
+using MealPlannerApp.Services.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MealPlannerApp.Services;
@@ -56,23 +57,7 @@ public class MealPlanTemplateService : IMealPlanTemplateService
     public async Task<MealPlanTemplate> CreateFromWeek(int ownerId, DateTime weekStart, string name, string? description, bool submitForReview)
     {
         var normalizedWeekStart = Infrastructure.WeekDateHelper.GetWeekStart(weekStart);
-        var weeklyPlan = await _dbContext.MealPlans
-            .Where(mp => mp.UserId == ownerId && mp.Date >= normalizedWeekStart && mp.Date < normalizedWeekStart.AddDays(7))
-            .Include(mp => mp.Meals)
-            .ThenInclude(m => m.Recipe)
-            .OrderBy(mp => mp.Date)
-            .ToListAsync();
-
-        var sourceMeals = weeklyPlan
-            .SelectMany(plan => plan.Meals.Select(meal => new
-            {
-                DayOffset = (plan.Date.Date - normalizedWeekStart).Days,
-                Meal = meal
-            }))
-            .Where(x => x.DayOffset is >= 0 and < 7)
-            .OrderBy(x => x.DayOffset)
-            .ThenBy(x => x.Meal.MealType)
-            .ToList();
+        var sourceMeals = await GetSourceMeals(ownerId, normalizedWeekStart);
 
         // A template needs at least one meal to share.
         if (sourceMeals.Count == 0)
@@ -105,6 +90,94 @@ public class MealPlanTemplateService : IMealPlanTemplateService
         _dbContext.MealPlanTemplates.Add(template);
         await _dbContext.SaveChangesAsync();
         return template;
+    }
+
+    /// <summary>
+    /// Replaces template details and stored meals from a selected week.
+    /// </summary>
+    public async Task<bool> UpdateFromWeek(int id, int currentUserId, bool isAdmin, DateTime weekStart, string name, string? description, bool submitForReview)
+    {
+        var template = await _dbContext.MealPlanTemplates
+            .Include(t => t.Meals)
+            .FirstOrDefaultAsync(t => t.Id == id);
+        if (template is null)
+        {
+            return false;
+        }
+
+        if (!CanManage(template, currentUserId, isAdmin))
+        {
+            return false;
+        }
+
+        var normalizedWeekStart = Infrastructure.WeekDateHelper.GetWeekStart(weekStart);
+        var sourceMeals = await GetSourceMeals(template.OwnerId, normalizedWeekStart);
+        if (sourceMeals.Count == 0)
+        {
+            throw new InvalidOperationException("Add meals to that week before updating this shared plan.");
+        }
+
+        template.Name = name.Trim();
+        template.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        template.WeekStart = normalizedWeekStart;
+
+        _dbContext.MealPlanTemplateMeals.RemoveRange(template.Meals);
+        template.Meals.Clear();
+
+        foreach (var sourceMeal in sourceMeals)
+        {
+            template.Meals.Add(new MealPlanTemplateMeal
+            {
+                CreatedAt = DateTime.UtcNow,
+                DayOffset = sourceMeal.DayOffset,
+                MealType = sourceMeal.Meal.MealType,
+                RecipeId = sourceMeal.Meal.RecipeId,
+                PortionMultiplier = sourceMeal.Meal.PortionMultiplier
+            });
+        }
+
+        if (isAdmin)
+        {
+            if (submitForReview)
+            {
+                ApplyReviewState(template, ApprovalStatus.Approved, null);
+            }
+        }
+        else
+        {
+            var nextStatus = template.ApprovalStatus == ApprovalStatus.Approved
+                ? ApprovalStatus.PendingReview
+                : submitForReview
+                    ? ApprovalStatus.PendingReview
+                    : ApprovalStatus.Draft;
+            ApplyReviewState(template, nextStatus, null);
+        }
+
+        await _dbContext.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Deletes a template when the current user can manage it.
+    /// </summary>
+    public async Task<DeleteOperationResult> DeleteTemplate(int id, int currentUserId, bool isAdmin)
+    {
+        var template = await _dbContext.MealPlanTemplates
+            .Include(t => t.Meals)
+            .FirstOrDefaultAsync(t => t.Id == id);
+        if (template is null)
+        {
+            return DeleteOperationResult.NotFound;
+        }
+
+        if (!CanManage(template, currentUserId, isAdmin))
+        {
+            return DeleteOperationResult.Forbidden;
+        }
+
+        _dbContext.MealPlanTemplates.Remove(template);
+        await _dbContext.SaveChangesAsync();
+        return DeleteOperationResult.Deleted;
     }
 
     /// <summary>
@@ -304,6 +377,31 @@ public class MealPlanTemplateService : IMealPlanTemplateService
     private static bool CanManage(MealPlanTemplate template, int ownerId, bool isAdmin)
     {
         return isAdmin || template.OwnerId == ownerId;
+    }
+
+    /// <summary>
+    /// Loads one user's source meals for a selected week.
+    /// </summary>
+    private async Task<List<(int DayOffset, Meal Meal)>> GetSourceMeals(int ownerId, DateTime normalizedWeekStart)
+    {
+        var weeklyPlan = await _dbContext.MealPlans
+            .Where(mp => mp.UserId == ownerId && mp.Date >= normalizedWeekStart && mp.Date < normalizedWeekStart.AddDays(7))
+            .Include(mp => mp.Meals)
+            .ThenInclude(m => m.Recipe)
+            .OrderBy(mp => mp.Date)
+            .ToListAsync();
+
+        return weeklyPlan
+            .SelectMany(plan => plan.Meals.Select(meal => new
+            {
+                DayOffset = (plan.Date.Date - normalizedWeekStart).Days,
+                Meal = meal
+            }))
+            .Where(x => x.DayOffset is >= 0 and < 7)
+            .OrderBy(x => x.DayOffset)
+            .ThenBy(x => x.Meal.MealType)
+            .Select(x => (x.DayOffset, x.Meal))
+            .ToList();
     }
 
     /// <summary>

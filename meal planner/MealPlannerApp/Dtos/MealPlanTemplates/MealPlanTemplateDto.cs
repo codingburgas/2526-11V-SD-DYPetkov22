@@ -10,6 +10,9 @@ public class MealPlanTemplateDto
     /// <summary>Template id.</summary>
     public int Id { get; set; }
 
+    /// <summary>Monday date for the stored week.</summary>
+    public DateTime WeekStart { get; set; }
+
     /// <summary>Template name.</summary>
     public string Name { get; set; } = string.Empty;
 

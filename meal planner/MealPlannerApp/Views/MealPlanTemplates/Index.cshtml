@@ -47,6 +47,11 @@ else
                         }
                         <div class="d-flex flex-wrap gap-2">
                             <a asp-action="Details" asp-route-id="@template.Id" class="btn btn-sm btn-outline-info">Details</a>
+                            @if (User.Identity?.IsAuthenticated == true && (User.IsInRole(ApplicationRoles.Admin) || isOwner))
+                            {
+                                <a asp-action="Edit" asp-route-id="@template.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@template.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                            }
                             @if (User.Identity?.IsAuthenticated == true && (template.ApprovalStatus == ApprovalStatus.Approved || isOwner || User.IsInRole(ApplicationRoles.Admin)))
                             {
                                 <form asp-action="Apply" method="post" class="d-flex gap-2">

@@ -103,12 +103,6 @@ public class RecipesController : Controller
             return Forbid();
         }
 
-        if (!IsAdmin() && recipe.ApprovalStatus == ApprovalStatus.Approved)
-        {
-            TempData["ErrorMessage"] = "Approved recipes are read-only. Create a new draft instead.";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
         return View(MapToDto(recipe));
     }
 
@@ -130,15 +124,23 @@ public class RecipesController : Controller
             return View(dto);
         }
 
+        var existingRecipe = await _recipeService.GetRecipeById(id, GetCurrentUserId(), IsAdmin());
+        if (existingRecipe is null)
+        {
+            return NotFound();
+        }
+
         var updated = await _recipeService.UpdateRecipe(id, User.GetRequiredUserId(), IsAdmin(), MapToEntity(dto), submitForReview);
         if (!updated)
         {
             return Forbid();
         }
 
-        TempData["SuccessMessage"] = submitForReview
-            ? "Recipe updated and submitted for admin review."
-            : "Recipe changes saved.";
+        TempData["SuccessMessage"] = !IsAdmin() && existingRecipe.ApprovalStatus == ApprovalStatus.Approved
+            ? "Recipe updated and sent back to admin review before it becomes public again."
+            : submitForReview
+                ? "Recipe updated and submitted for admin review."
+                : "Recipe changes saved.";
         return RedirectToAction(nameof(Details), new { id });
     }
 

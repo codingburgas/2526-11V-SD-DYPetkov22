@@ -1,4 +1,5 @@
 using MealPlannerApp.Models;
+using MealPlannerApp.Services.Models;
 
 namespace MealPlannerApp.Services.Interfaces;
 
@@ -15,6 +16,12 @@ public interface IMealPlanTemplateService
 
     /// <summary>Creates a template from a week.</summary>
     Task<MealPlanTemplate> CreateFromWeek(int ownerId, DateTime weekStart, string name, string? description, bool submitForReview);
+
+    /// <summary>Updates a template from a week.</summary>
+    Task<bool> UpdateFromWeek(int id, int currentUserId, bool isAdmin, DateTime weekStart, string name, string? description, bool submitForReview);
+
+    /// <summary>Deletes a template when allowed.</summary>
+    Task<DeleteOperationResult> DeleteTemplate(int id, int currentUserId, bool isAdmin);
 
     /// <summary>Submits a template for review.</summary>
     Task<bool> SubmitForReview(int id, int ownerId, bool isAdmin);

@@ -107,11 +107,6 @@ public class RecipeService : IRecipeService
             return false;
         }
 
-        if (!isAdmin && existingRecipe.ApprovalStatus == ApprovalStatus.Approved)
-        {
-            return false;
-        }
-
         existingRecipe.Name = recipe.Name;
         existingRecipe.Description = recipe.Description;
         existingRecipe.Instructions = recipe.Instructions;
@@ -125,7 +120,12 @@ public class RecipeService : IRecipeService
         }
         else
         {
-            ApplyReviewState(existingRecipe, submitForReview ? ApprovalStatus.PendingReview : ApprovalStatus.Draft, null);
+            var nextStatus = existingRecipe.ApprovalStatus == ApprovalStatus.Approved
+                ? ApprovalStatus.PendingReview
+                : submitForReview
+                    ? ApprovalStatus.PendingReview
+                    : ApprovalStatus.Draft;
+            ApplyReviewState(existingRecipe, nextStatus, null);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -144,11 +144,6 @@ public class RecipeService : IRecipeService
         }
 
         if (!CanManage(recipe, ownerId, isAdmin))
-        {
-            return DeleteOperationResult.Forbidden;
-        }
-
-        if (!isAdmin && recipe.ApprovalStatus == ApprovalStatus.Approved)
         {
             return DeleteOperationResult.Forbidden;
         }

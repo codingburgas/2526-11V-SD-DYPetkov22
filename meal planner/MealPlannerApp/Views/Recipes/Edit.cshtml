@@ -53,9 +53,23 @@
         </div>
     }
 
+    @if (Model.ApprovalStatus == ApprovalStatus.Approved && !User.IsInRole(ApplicationRoles.Admin))
+    {
+        <div class="alert alert-info mt-4 mb-0">
+            Changing an approved recipe sends it back to admin review before it is public again.
+        </div>
+    }
+
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" name="submitForReview" value="false" class="btn btn-outline-secondary">Save Draft</button>
-        <button type="submit" name="submitForReview" value="true" class="btn btn-primary">Save And Submit</button>
+        @if (Model.ApprovalStatus == ApprovalStatus.Approved && !User.IsInRole(ApplicationRoles.Admin))
+        {
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        }
+        else
+        {
+            <button type="submit" name="submitForReview" value="false" class="btn btn-outline-secondary">Save Draft</button>
+            <button type="submit" name="submitForReview" value="true" class="btn btn-primary">Save And Submit</button>
+        }
         <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
     </div>
 </form>

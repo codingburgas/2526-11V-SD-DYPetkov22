@@ -4,6 +4,7 @@ using MealPlannerApp.Infrastructure;
 using MealPlannerApp.Models;
 using MealPlannerApp.Services;
 using MealPlannerApp.Services.Interfaces;
+using MealPlannerApp.Services.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -95,6 +96,128 @@ public class MealPlanTemplatesController : Controller
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(dto);
         }
+    }
+
+    /// <summary>
+    /// Shows the template edit form.
+    /// </summary>
+    [Authorize]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var template = await _mealPlanTemplateService.GetTemplateById(id, GetCurrentUserId(), IsAdmin());
+        if (template is null)
+        {
+            return NotFound();
+        }
+
+        if (!CanManage(template))
+        {
+            return Forbid();
+        }
+
+        return View(new EditMealPlanTemplateDto
+        {
+            Id = template.Id,
+            WeekStart = template.WeekStart,
+            Name = template.Name,
+            Description = template.Description
+        });
+    }
+
+    /// <summary>
+    /// Saves template edits from a selected week.
+    /// </summary>
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, EditMealPlanTemplateDto dto, bool submitForReview = false)
+    {
+        if (id != dto.Id)
+        {
+            return BadRequest();
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(dto);
+        }
+
+        var existingTemplate = await _mealPlanTemplateService.GetTemplateById(id, GetCurrentUserId(), IsAdmin());
+        if (existingTemplate is null)
+        {
+            return NotFound();
+        }
+
+        try
+        {
+            var updated = await _mealPlanTemplateService.UpdateFromWeek(
+                id,
+                User.GetRequiredUserId(),
+                IsAdmin(),
+                dto.WeekStart,
+                dto.Name,
+                dto.Description,
+                submitForReview);
+            if (!updated)
+            {
+                return Forbid();
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(dto);
+        }
+
+        TempData["SuccessMessage"] = !IsAdmin() && existingTemplate.ApprovalStatus == ApprovalStatus.Approved
+            ? "Shared plan updated and sent back to admin review before it becomes public again."
+            : submitForReview
+                ? "Shared plan updated and submitted for admin review."
+                : "Shared plan changes saved.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    /// <summary>
+    /// Shows the template delete confirmation.
+    /// </summary>
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var template = await _mealPlanTemplateService.GetTemplateById(id, GetCurrentUserId(), IsAdmin());
+        if (template is null)
+        {
+            return NotFound();
+        }
+
+        if (!CanManage(template))
+        {
+            return Forbid();
+        }
+
+        return View(MapToDto(template));
+    }
+
+    /// <summary>
+    /// Deletes a template.
+    /// </summary>
+    [Authorize]
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var deleted = await _mealPlanTemplateService.DeleteTemplate(id, User.GetRequiredUserId(), IsAdmin());
+        if (deleted == DeleteOperationResult.NotFound)
+        {
+            return NotFound();
+        }
+
+        if (deleted == DeleteOperationResult.Forbidden)
+        {
+            return Forbid();
+        }
+
+        TempData["SuccessMessage"] = "Shared plan removed.";
+        return RedirectToAction(nameof(Index));
     }
 
     /// <summary>
@@ -216,6 +339,14 @@ public class MealPlanTemplatesController : Controller
     }
 
     /// <summary>
+    /// Checks edit and delete permission for a template.
+    /// </summary>
+    private bool CanManage(MealPlanTemplate template)
+    {
+        return IsAdmin() || template.OwnerId == GetCurrentUserId();
+    }
+
+    /// <summary>
     /// Builds a weekly template DTO for display.
     /// </summary>
     private static MealPlanTemplateDto MapToDto(MealPlanTemplate template)
@@ -248,6 +379,7 @@ public class MealPlanTemplatesController : Controller
         return new MealPlanTemplateDto
         {
             Id = template.Id,
+            WeekStart = template.WeekStart,
             Name = template.Name,
             Description = template.Description,
             OwnerId = template.OwnerId,
